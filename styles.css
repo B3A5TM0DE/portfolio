@@ -111,3 +111,9 @@ footer {
     padding: 10px;
     text-align: center;
 }
+
+#intro-text {
+    color: grey;  /* Make the text grey */
+    font-size: 1.5em;  /* Adjust size as needed */
+    margin-top: 20px;  /* Add some space between the heading and the paragraph */
+}
