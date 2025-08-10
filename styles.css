@@ -74,8 +74,8 @@ main {
 
 #intro-text {
     color: #777;  /* Lighter grey */
-    font-size: 3em;
-    margin-top: 20px;  /* Add space between heading and text */
+    font-size: 5em;
+    margin-top: 8px;  /* Add space between heading and text */
 }
 
 /* Category box container */
