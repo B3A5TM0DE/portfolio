@@ -67,14 +67,14 @@ main {
 }
 
 #intro h1 {
-    font-size: 8em; /* Adjust the size as needed */
+    font-size: 6em; /* Adjust the size as needed */
     margin-top: 100px; /* Center it below the header */
     text-align: center;
 }
 
 #intro-text {
     color: #777;  /* Lighter grey */
-    font-size: 5em;
+    font-size: 4em;
     margin-top: 8px;  /* Add space between heading and text */
 }
 
@@ -121,4 +121,17 @@ footer {
     color: white;
     padding: 10px;
     text-align: center;
+}
+
+.centered-container {
+    width: 50%;           /* Only use 50% of the page width */
+    margin: 0 auto;       /* Center it horizontally */
+    text-align: center;   /* Keep text and buttons centered */
+}
+
+/* Ensure categories are in a row inside the centered container */
+.categories {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
 }
