@@ -74,8 +74,8 @@ main {
 
 #intro-text {
     color: #777;  /* Lighter grey */
-    font-size: 4em;
-    margin-top: 8px;  /* Add space between heading and text */
+    font-size: 2em;
+    margin-top: 5px;  /* Add space between heading and text */
 }
 
 /* Category box container */
@@ -124,7 +124,7 @@ footer {
 }
 
 .centered-container {
-    width: 50%;           /* Only use 50% of the page width */
+    width: 65%;           /* Only use 50% of the page width */
     margin: 0 auto;       /* Center it horizontally */
     text-align: center;   /* Keep text and buttons centered */
 }
