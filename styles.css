@@ -18,6 +18,7 @@ header {
     top: 0;
     background-color: transparent;
     z-index: 100;
+    box-sizing: border-box; /* Prevent overflow */
 }
 
 #name {
@@ -31,6 +32,7 @@ nav ul {
     list-style-type: none;
     padding: 0;
     display: flex;
+    white-space: nowrap; /* Prevent wrapping */
 }
 
 nav ul li {
@@ -55,7 +57,7 @@ main {
 }
 
 #intro h1 {
-    font-size: 4em;
+    font-size: 7em;
     margin-top: 100px;
 }
 
