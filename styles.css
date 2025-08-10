@@ -1,13 +1,13 @@
-/* General styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: white;
     color: black;
+    width: 100%;
+    overflow-x: hidden;  /* Prevent horizontal overflow */
 }
 
-/* Header styles */
 header {
     display: flex;
     justify-content: space-between;
@@ -19,6 +19,7 @@ header {
     background-color: transparent;
     z-index: 100;
     box-sizing: border-box; /* Prevent overflow */
+    max-width: 100%;  /* Ensure it fits within the viewport */
 }
 
 #name {
@@ -33,6 +34,7 @@ nav ul {
     padding: 0;
     display: flex;
     white-space: nowrap; /* Prevent wrapping */
+    margin: 0; /* Remove any margin */
 }
 
 nav ul li {
@@ -44,6 +46,8 @@ nav ul li a {
     text-decoration: none;
     font-size: 18px;
     text-transform: uppercase;
+    display: block;  /* Ensures the links don't collapse */
+    padding: 5px 10px;
 }
 
 nav ul li a:hover {
@@ -57,7 +61,7 @@ main {
 }
 
 #intro h1 {
-    font-size: 7em;
+    font-size: 20em;
     margin-top: 100px;
 }
 
