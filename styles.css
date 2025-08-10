@@ -61,10 +61,21 @@ main {
     text-align: center;
 }
 
+#intro-container {
+    display: inline-block;
+    text-align: center; /* Ensures both title and paragraph are centered */
+}
+
 #intro h1 {
     font-size: 8em; /* Adjust the size as needed */
     margin-top: 100px; /* Center it below the header */
     text-align: center;
+}
+
+#intro-text {
+    color: #777;  /* Lighter grey */
+    font-size: 3em;
+    margin-top: 20px;  /* Add space between heading and text */
 }
 
 /* Category box container */
@@ -110,10 +121,4 @@ footer {
     color: white;
     padding: 10px;
     text-align: center;
-}
-
-#intro-text {
-    color: grey;  /* Make the text grey */
-    font-size: 1.5em;  /* Adjust size as needed */
-    margin-top: 20px;  /* Add some space between the heading and the paragraph */
 }
