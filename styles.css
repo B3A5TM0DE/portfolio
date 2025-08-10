@@ -23,7 +23,7 @@ header {
 }
 
 #name {
-    font-size: 27px;
+    font-size: 25px;
     font-weight: bold;
     text-transform: uppercase;
     color: black;
@@ -58,6 +58,12 @@ nav ul li a:hover {
 /* Main content section */
 main {
     padding-top: 80px; /* To account for fixed header */
+    text-align: center;
+}
+
+#intro h1 {
+    font-size: 8em; /* Adjust the size as needed */
+    margin-top: 100px; /* Center it below the header */
     text-align: center;
 }
 
