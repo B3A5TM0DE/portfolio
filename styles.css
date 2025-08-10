@@ -7,29 +7,61 @@ body {
     color: black;
 }
 
+/* Header styles */
 header {
-    background-color: black;
-    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 20px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    background-color: transparent;
+    z-index: 100;
+}
+
+/* Name in top-left corner */
+#name {
+    font-size: 32px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: black;
+}
+
+/* Navigation styles in top-right corner */
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 30px;
+}
+
+nav ul li a {
+    color: black;
+    text-decoration: none;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+nav ul li a:hover {
+    color: #007BFF;
+}
+
+/* Main content section styling */
+main {
+    padding-top: 80px; /* To account for fixed header */
     text-align: center;
 }
 
-header nav ul {
-    list-style-type: none;
-    padding: 0;
+#intro h1 {
+    font-size: 4em;
+    margin-top: 100px; /* Center the 'Hi, I'm Owen Kelley' section */
 }
 
-header nav ul li {
-    display: inline;
-    margin: 0 15px;
-}
-
-header nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 18px;
-}
-
+/* About, Projects, Contact sections */
 section {
     padding: 50px 20px;
     text-align: center;
@@ -51,10 +83,3 @@ a {
 a:hover {
     color: #007BFF;
 }
-
-/* Add this section for hover animation */
-header nav ul li a:hover {
-    transition: color 0.3s ease;
-    color: #007BFF; /* Light blue color on hover */
-}
-
