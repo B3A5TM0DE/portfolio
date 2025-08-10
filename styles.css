@@ -20,7 +20,6 @@ header {
     z-index: 100;
 }
 
-/* Name in top-left corner */
 #name {
     font-size: 32px;
     font-weight: bold;
@@ -28,7 +27,6 @@ header {
     color: black;
 }
 
-/* Navigation styles in top-right corner */
 nav ul {
     list-style-type: none;
     padding: 0;
@@ -50,7 +48,7 @@ nav ul li a:hover {
     color: #007BFF;
 }
 
-/* Main content section styling */
+/* Main content section */
 main {
     padding-top: 80px; /* To account for fixed header */
     text-align: center;
@@ -58,28 +56,29 @@ main {
 
 #intro h1 {
     font-size: 4em;
-    margin-top: 100px; /* Center the 'Hi, I'm Owen Kelley' section */
+    margin-top: 100px;
 }
 
-/* About, Projects, Contact sections */
-section {
-    padding: 50px 20px;
-    text-align: center;
+/* Category box styling */
+.category-box {
+    display: inline-block;
+    background-color: black;
+    color: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.category-box h2 {
+    font-size: 2em;
+    margin: 0;
+}
+
+/* Footer */
 footer {
     background-color: black;
     color: white;
     padding: 10px;
     text-align: center;
-}
-
-/* Basic styling for links */
-a {
-    color: black;
-    text-decoration: none;
-}
-
-a:hover {
-    color: #007BFF;
 }
