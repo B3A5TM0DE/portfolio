@@ -67,15 +67,15 @@ main {
 }
 
 #intro h1 {
-    font-size: 6em; /* Adjust the size as needed */
+    font-size: 4em; /* Adjust the size as needed */
     margin-top: 100px; /* Center it below the header */
     text-align: center;
 }
 
 #intro-text {
     color: #777;  /* Lighter grey */
-    font-size: 2em;
-    margin-top: 5px;  /* Add space between heading and text */
+    font-size: 1em;
+    margin-top: 2px;  /* Add space between heading and text */
 }
 
 /* Category box container */
