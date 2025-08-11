@@ -1,3 +1,4 @@
+/* ===== Base Styles ===== */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -5,9 +6,10 @@ body {
     background-color: white;
     color: black;
     width: 100%;
-    overflow-x: hidden;  /* Prevent horizontal overflow */
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
+/* ===== Header ===== */
 header {
     display: flex;
     justify-content: space-between;
@@ -18,8 +20,8 @@ header {
     top: 0;
     background-color: transparent;
     z-index: 100;
-    box-sizing: border-box; /* Prevent overflow */
-    max-width: 100%;  /* Ensure it fits within the viewport */
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 #name {
@@ -33,8 +35,8 @@ nav ul {
     list-style-type: none;
     padding: 0;
     display: flex;
-    white-space: nowrap; /* Prevent wrapping */
-    margin: 0; /* Remove any margin */
+    white-space: nowrap;
+    margin: 0;
 }
 
 nav ul li {
@@ -46,7 +48,7 @@ nav ul li a {
     text-decoration: none;
     font-size: 18px;
     text-transform: uppercase;
-    display: block;  /* Ensures the links don't collapse */
+    display: block;
     padding: 5px 10px;
 }
 
@@ -54,49 +56,56 @@ nav ul li a:hover {
     color: #007BFF;
 }
 
-/* Main content section */
-/* Main content section */
+/* ===== Main Content ===== */
 main {
-    padding-top: 80px; /* To account for fixed header */
+    padding-top: 80px; /* Space for fixed header */
     text-align: center;
 }
 
-#intro-container {
-    display: inline-block;
-    text-align: center; /* Ensures both title and paragraph are centered */
+/* Intro section (title + subtitle + buttons) */
+#intro {
+    display: block; /* Prevent flexbox from global section rules */
 }
 
+.centered-container {
+    width: 50%;          /* Middle 50% of page */
+    margin: 0 auto;      /* Center horizontally */
+    text-align: center;  /* Center text and buttons */
+}
+
+/* Title */
 #intro h1 {
-    font-size: 4em; /* Adjust the size as needed */
-    margin-top: 100px; /* Center it below the header */
-    text-align: center;
+    font-size: 4em;
+    margin-top: 100px;
 }
 
+/* Subtitle under title */
 #intro-text {
-    color: #777;  /* Lighter grey */
-    font-size: 3em;
-    margin-top: 2px;  /* Add space between heading and text */
+    color: #777;         /* Grey */
+    font-size: 1.5em;
+    margin-top: 20px;
 }
 
-/* Category box container */
-section {
+/* ===== Category Buttons ===== */
+.categories {
     display: flex;
     justify-content: center;
+    gap: 20px;           /* Space between buttons */
     margin-top: 50px;
+    flex-wrap: wrap;     /* Wrap on small screens */
 }
 
-/* Category box styling */
 .category-box {
-    display: inline-block;
-    background-color: transparent;  /* Make the background transparent */
+    background-color: transparent;
     color: black;
     padding: 20px;
     margin: 10px;
-    border: 2px solid black;  /* Black border for the outline */
+    border: 2px solid black; /* Outline */
     border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    width: 200px;  /* Set a fixed width for the buttons */
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+    width: 200px;
     text-align: center;
+    cursor: pointer;
 }
 
 .category-box h2 {
@@ -112,10 +121,10 @@ section {
 }
 
 .category-box a:hover {
-    background-color: #f0f0f0;  /* Light gray background on hover */
+    background-color: #f0f0f0; /* Light hover effect */
 }
 
-/* Footer */
+/* ===== Footer ===== */
 footer {
     background-color: black;
     color: white;
@@ -123,15 +132,21 @@ footer {
     text-align: center;
 }
 
-.centered-container {
-    width: 65%;           /* Only use 50% of the page width */
-    margin: 0 auto;       /* Center it horizontally */
-    text-align: center;   /* Keep text and buttons centered */
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 900px) {
+    .centered-container {
+        width: 70%;
+    }
 }
 
-/* Ensure categories are in a row inside the centered container */
-.categories {
-    display: flex;
-    justify-content: center;
-    margin-top: 50px;
+@media (max-width: 600px) {
+    .centered-container {
+        width: 90%;
+    }
+    #intro h1 {
+        font-size: 2.6em;
+    }
+    #intro-text {
+        font-size: 1.2em;
+    }
 }
