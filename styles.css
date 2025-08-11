@@ -83,7 +83,7 @@ main {
 #intro-text {
     color: #777;         /* Grey */
     font-size: 1.5em;
-    margin-top: 3px;
+    margin-top: 0px;
 }
 
 /* ===== Category Buttons ===== */
