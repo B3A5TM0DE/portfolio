@@ -84,7 +84,7 @@ main {
 #intro-text {
     color: #777;         /* Grey */
     font-size: 1.5em;
-    margin-top: 0px;
+    margin-top: 5px;
 }
 
 /* ===== Category Buttons ===== */
@@ -98,19 +98,19 @@ main {
 
 .category-box {
     background-color: transparent;
-    color: black;
-    padding: 20px;
-    margin: 10px;
-    border: 2px solid black; /* Outline */
+    color: #777;
+    padding: 6px;
+    margin: 6px;
+    border: 2px solid #bbb; /* Outline */
     border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-    width: 200px;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
+    width: 100px;
     text-align: center;
     cursor: pointer;
 }
 
 .category-box h2 {
-    font-size: 2em;
+    font-size: 1em;
     margin: 0;
 }
 
