@@ -73,7 +73,15 @@ main {
 }
 
 /* Left column */
-.intro-text { flex: 1; }
+.intro-text {
+    flex: 1;
+    color: #777;       /* Apply grey to everything in this column */
+    font-size: 1.1em;  /* Slightly larger than default text size */
+}
+
+.intro-text h1 {
+    color: black;
+}
 
 /* Right column (image) */
 .intro-image {
