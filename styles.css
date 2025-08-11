@@ -77,6 +77,7 @@ main {
 #intro h1 {
     font-size: 4em;
     margin-top: 100px;
+    margin-bottom: 0;
 }
 
 /* Subtitle under title */
