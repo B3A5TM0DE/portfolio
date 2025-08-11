@@ -112,6 +112,7 @@ main {
 .category-box h2 {
     font-size: 1em;
     margin: 0;
+    color: black;
 }
 
 .category-box a {
