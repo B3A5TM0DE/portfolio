@@ -3,41 +3,33 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Portfolio | Software Engineer</title>
+<title>Portfolio | Owen Kelley</title>
 <style>
   :root { --headerH: 80px; --maxW: 1100px; --cardRadius: 16px; --cardPad: 32px; --gap: 24px; --ink: #0b0b0b; --muted: #6b7280; --line: #e5e7eb; --bgSubtle: #f8fafc; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
-  body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #FCFEFB; /* rgba(252,254,251,1) */ color: var(--ink); }
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #fff; color: var(--ink); }
 
   /* ===== Header ===== */
-  header { position: fixed; top: 0; left: 0; right: 0; height: var(--headerH); display: flex; justify-content: center; align-items: center; padding: 0 20px; background: #FCFEFB; /* rgba(252,254,251,1) */ z-index: 100; border-bottom: 1px solid var(--line); }
-  #name { font-weight: bold; text-transform: uppercase; letter-spacing: .06em; }
-  nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; align-items: center; justify-content: center; }
+  header { position: fixed; top: 0; left: 0; right: 0; height: var(--headerH); display: flex; justify-content: center; align-items: center; padding: 0 20px; background: white; z-index: 100; border-bottom: 1px solid var(--line); }
+  nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; }
   nav a { text-decoration: none; color: var(--ink); text-transform: capitalize; padding: 8px 14px; border-radius: 999px; line-height: 1; position: relative; transition: background-color .2s ease, outline-color .2s ease, color .2s ease; }
   nav a.active { outline: 2px solid var(--ink); outline-offset: 2px; background: var(--bgSubtle); }
   nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 999px; }
 
-  /* ===== Main / Hero ===== */
+  /* ===== Main / Shared ===== */
   main { padding-top: var(--headerH); }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== Hero / Home page ===== */
   #intro { min-height: calc(100vh - var(--headerH)); display: flex; align-items: center; }
   .centered-container { width: min(var(--maxW), 92%); margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 40px; text-align: center; }
-  .intro-text { position: relative; display: grid; justify-items: center; flex: 1; color: #777; font-size: 1.3rem; padding-left: 0; text-align: center; margin: 0 auto; }
+  .intro-text { flex: 1; color: #777; font-size: 1.3rem; text-align: center; margin: 0 auto; opacity: 0; transform: translateY(8px); transition: opacity .6s ease .15s, transform .6s ease .15s; }
+  .intro-text.show { opacity: 1; transform: none; }
   #intro h1 { font-size: clamp(36px, 6vw, 64px); margin: 0; line-height: 1.05; color: var(--ink); }
-  #subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 12px; line-height: 1.7; min-height: 1.7em; } 
+  #subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 12px; line-height: 1.7; min-height: 1.7em; }
   #roleText { display: inline-block; min-width: 17ch; }
-  .hero-gif { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: min(380px, 60%); margin: 0; background: #FCFEFB; border-radius: 12px; overflow: hidden; aspect-ratio: 1.21154; }
-  .hero-gif video { width: 100%; height: auto; display: block; border-radius: 0; box-shadow: none; filter: none; outline: none; border: 0; background: transparent; }
-  /* overlay for autoplay fallback */
-  .hero-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; cursor: pointer; border: 2px solid #111; background: rgba(255,255,255,0.92); color: #111; font-size: 14px; padding: 8px 14px; border-radius: 999px; letter-spacing: .02em; box-shadow: none; }
-  .hero-gif.needs-interaction .hero-play { display: inline-grid; }
-  .hero-video-error { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 12px; color: #b91c1c; }
-  .hero-gif.fade { animation: fadeOut .8s ease forwards; }
-  @media (max-width: 600px) { .hero-gif { width: 70%; } }
-
-  .categories { display: flex; gap: 12px; width: 100%; margin: 28px 0 0; justify-content: center; }
-  a.category-box { flex: 0 1 auto; padding: 12px 18px; border: 2px solid var(--ink); border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1rem; color: var(--ink); background: transparent; }
-  a.category-box:hover { background: var(--ink); color: #fff; }
 
   /* ===== Sections ===== */
   section.anchor { scroll-margin-top: var(--headerH); }
@@ -49,11 +41,8 @@
   #projects { background: var(--bgSubtle); padding: 0; }
   .projects-pin { position: relative; }
   .pinner { position: sticky; top: var(--headerH); height: calc(100vh - var(--headerH)); display: grid; grid-template-rows: auto 1fr; gap: 14px; align-content: center; padding: 18px 0; overscroll-behavior-block: contain; }
-  /* body lock while stepping slides */
   body.no-scroll { overflow: hidden; }
-
   .pinner > .section-head { width: min(var(--maxW), 92%); margin: 0 auto; }
-
   .carousel { position: relative; width: min(var(--maxW), 92%); margin: 0 auto; height: 100%; overflow: hidden; border-radius: var(--cardRadius); }
   .track { display: flex; flex-direction: column; height: 100%; transition: transform 1.5s ease; will-change: transform; }
   .slide { min-height: 100%; padding: clamp(12px, 2vw, 20px); display: grid; }
@@ -74,120 +63,153 @@
 
   .caret { display: inline-block; width: 1ch; border-right: 2px solid #000; margin-left: 2px; animation: blink .9s steps(1,end) infinite; }
   @keyframes blink { 50% { border-color: transparent; } }
-  @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
   @media (prefers-reduced-motion: reduce) { .caret { animation: none; border-right: 0; } }
 
   @media (max-width: 1000px) { .project-card { grid-template-columns: 1fr; } .project-media { min-height: 200px; } }
-  @media (max-width: 900px) { .centered-container { width: 92%; flex-direction: column; text-align: center; gap: 24px; } #intro h1 { white-space: normal; } .categories { flex-wrap: wrap; justify-content: center; } }
+  @media (max-width: 900px) { .centered-container { width: 92%; flex-direction: column; text-align: center; gap: 24px; } #intro h1 { white-space: normal; } }
   @media (max-width: 600px) { #subtitle { font-size: 1rem; } .slide { padding: 12px; } }
+</style>
+<style>
+  /* ===== Intro Overlay Animation (single-file) ===== */
+  .intro-overlay { position: fixed; inset: 0; background: #000; display: grid; place-items: center; z-index: 9999; overflow: hidden; }
+  .intro-overlay.hidden { display: none; }
+  .intro-overlay .square { width: 44px; height: 44px; background: #fff; border-radius: 10px; display: grid; place-items: center; user-select: none; transform: translateY(0) rotate(0deg) scale(0); opacity: 0; will-change: transform, opacity;
+    /* sequence: pop in (quick), hold ~1s, then spin; lift happens AFTER spin */
+    animation:
+      popHold 1.3s cubic-bezier(0.2,0.8,0.2,1) forwards,
+      spin360 0.9s 1.3s cubic-bezier(0.2,0.8,0.2,1) forwards;
+  }
+  /* wrapper moves the square upward so rotation + lift don't conflict */
+  .intro-overlay .sq-wrap { display: grid; place-items: center; /* lift starts after spin finishes: 1.3s + 0.9s = 2.2s */
+    animation: exitUp 0.7s 2.2s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .intro-overlay .white-wipe { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; background: #fff; transform: translateY(100%); }
+  .intro-overlay.revealing .white-wipe { transition: transform .7s cubic-bezier(0.16,1,0.3,1); transform: translateY(0%); }
+
+  /* Keyhole glyph */
+  .intro-overlay .square .keyhole { width:18px; height:26px; position:relative; display:block; transform-origin:50% 50%; will-change:transform; transform:rotate(0deg); /* counter-rotate while the square spins */
+    animation: counterSpin 0.9s 1.3s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+  .intro-overlay .square .keyhole::before { content:""; position:absolute; left:50%; top:0; width:14px; height:14px; background:#000; border-radius:50%; transform:translateX(-50%); }
+  .intro-overlay .square .keyhole::after { content:""; position:absolute; left:50%; top:11px; width:10px; height:14px; background:#000; transform:translateX(-50%); clip-path:polygon(50% 0%,80% 40%,80% 100%,20% 100%,20% 40%); }
+
+  @keyframes popHold {
+    /* 1.3s total: ~0.3s pop (with fade-in), ~1.0s hold */
+    0%   { transform: scale(0) rotate(0deg) translateY(0); opacity: 0; }
+    20%  { transform: scale(1) rotate(0deg) translateY(0); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg) translateY(0); opacity: 1; }
+  }
+    20%  { transform: scale(1) rotate(0deg) translateY(0); }
+    100% { transform: scale(1) rotate(0deg) translateY(0); }
+  }
+  @keyframes spin360 {
+    from { transform: scale(1) rotate(0deg) translateY(0); }
+    to   { transform: scale(1) rotate(360deg) translateY(0); }
+  }
+  @keyframes counterSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(-360deg); }
+  }
+  @keyframes exitUp {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-120vh); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro-overlay { display: none !important; }
+    .intro-text { opacity: 1 !important; transform: none !important; }
+  }
 </style>
 </head>
 <body>
 <header>
   <nav>
     <ul>
-      <li><a href="#intro">Home</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#contact">Contact</a></li>
-      </ul>
+      <li><a href="#/home" data-route="home">Home</a></li>
+      <li><a href="#/projects" data-route="projects">Projects</a></li>
+    </ul>
   </nav>
 </header>
 
 <main>
-  <!-- HERO -->
-  <section id="intro">
-    <div class="centered-container">
-      <div class="intro-text">
-        <div class="hero-gif">
-          <video id="heroVideo" autoplay muted playsinline preload="metadata">
-            <source src="media/hero-wave.mp4" type="video/mp4" />
-            <source src="media/hero-wave.mov" type="video/quicktime" />
-            Sorry, your browser doesn't support embedded videos.
-          </video>
-          <button class="hero-play" type="button" aria-label="Play intro video">Tap to play</button>
-          <div class="hero-video-error" aria-live="polite"></div>
-        </div>
-        <h1 id="headline">Hi I'm Owen</h1>
-        <p id="subtitle"><span id="roleText" aria-live="polite"></span><span class="caret" aria-hidden="true"></span></p>
+  <!-- HOME PAGE (intro only) -->
+  <div class="page home-page" data-page="home">
+    <section id="intro">
+      <div class="centered-container">
+        <div class="intro-text" id="introText">
+          <h1 id="headline">Hi I'm Owen</h1>
+          <p id="subtitle"><span id="roleText" aria-live="polite"></span><span class="caret" aria-hidden="true"></span></p>
         </div>
       </div>
     </section>
+  </div>
 
-  <!-- PROJECTS: Pinned vertical scroll-through -->
-  <section id="projects" class="anchor" aria-label="Projects">
-    <div class="projects-pin">
-      <div class="pinner" id="projectsPinner">
-        <div class="section-head">
-          <h2 style="margin:0 0 6px 0;">Projects</h2>
-          <p style="margin:0;color:var(--muted);font-size:.95rem;">Scroll to step through projects. The page continues after the last one.</p>
-        </div>
-        <div class="carousel" id="projectsCarousel" aria-live="polite">
-          <div class="track" role="group" aria-roledescription="carousel" aria-label="Project slides (vertical)">
-            <!-- Slide 1 -->
-            <article class="slide" role="group" aria-label="ADFS + Duo MFA Integration">
-              <div class="project-card">
-                <div class="project-header">
-                  <h3>ADFS + Duo MFA Integration</h3>
-                  <p class="project-desc">Deployed a .NET app for Windows endpoints, integrating ADFS with Duo MFA to harden authentication with minimal user friction.</p>
-                  <div class="tags"><span class="tag">C#</span><span class="tag">.NET</span><span class="tag">ADFS</span><span class="tag">Duo</span><span class="tag">Security</span></div>
-                  <div class="divider"></div>
-                  <ul class="bullets">
-                    <li>Reduced risky sign-ins by 42% post rollout.</li>
-                    <li>Graceful fallbacks for offline devices.</li>
-                    <li>Automated installer & health checks.</li>
-                  </ul>
+  <!-- PROJECTS PAGE (isolated) -->
+  <div class="page projects-page" data-page="projects">
+    <section id="projects" class="anchor" aria-label="Projects">
+      <div class="projects-pin">
+        <div class="pinner" id="projectsPinner">
+          <div class="section-head">
+            <h2 style="margin:0 0 6px 0;">Projects</h2>
+            <p style="margin:0;color:var(--muted);font-size:.95rem;">Scroll to step through projects. The page continues after the last one.</p>
+          </div>
+          <div class="carousel" id="projectsCarousel" aria-live="polite">
+            <div class="track" role="group" aria-roledescription="carousel" aria-label="Project slides (vertical)">
+              <!-- Slide 1 -->
+              <article class="slide" role="group" aria-label="ADFS + Duo MFA Integration">
+                <div class="project-card">
+                  <div class="project-header">
+                    <h3>ADFS + Duo MFA Integration</h3>
+                    <p class="project-desc">Deployed a .NET app for Windows endpoints, integrating ADFS with Duo MFA to harden authentication with minimal user friction.</p>
+                    <div class="tags"><span class="tag">C#</span><span class="tag">.NET</span><span class="tag">ADFS</span><span class="tag">Duo</span><span class="tag">Security</span></div>
+                    <div class="divider"></div>
+                    <ul class="bullets">
+                      <li>Reduced risky sign-ins by 42% post rollout.</li>
+                      <li>Graceful fallbacks for offline devices.</li>
+                      <li>Automated installer & health checks.</li>
+                    </ul>
+                  </div>
+                  <div class="project-media"><span>Image / GIF</span></div>
                 </div>
-                <div class="project-media"><span>Image / GIF</span></div>
-              </div>
-            </article>
-            <!-- Slide 2 -->
-            <article class="slide" role="group" aria-label="Active Directory Auth Gateway">
-              <div class="project-card">
-                <div class="project-header">
-                  <h3>Active Directory Auth Gateway</h3>
-                  <p class="project-desc">Azure gateway VM intercepting Kerberos/NTLM to apply conditional access and 2FA—no agents on domain controllers.</p>
-                  <div class="tags"><span class="tag">Azure</span><span class="tag">Networking</span><span class="tag">Kerberos</span><span class="tag">NTLM</span></div>
-                  <div class="divider"></div>
-                  <ul class="bullets">
-                    <li>WFP-based port inspection & policy engine.</li>
-                    <li>Per-request Duo prompt with allow/deny.</li>
-                    <li>Traffic shaping for lab replay tests.</li>
-                  </ul>
+              </article>
+              <!-- Slide 2 -->
+              <article class="slide" role="group" aria-label="Active Directory Auth Gateway">
+                <div class="project-card">
+                  <div class="project-header">
+                    <h3>Active Directory Auth Gateway</h3>
+                    <p class="project-desc">Azure gateway VM intercepting Kerberos/NTLM to apply conditional access and 2FA—no agents on domain controllers.</p>
+                    <div class="tags"><span class="tag">Azure</span><span class="tag">Networking</span><span class="tag">Kerberos</span><span class="tag">NTLM</span></div>
+                    <div class="divider"></div>
+                    <ul class="bullets">
+                      <li>WFP-based port inspection & policy engine.</li>
+                      <li>Per-request Duo prompt with allow/deny.</li>
+                      <li>Traffic shaping for lab replay tests.</li>
+                    </ul>
+                  </div>
+                  <div class="project-media"><span>Diagram</span></div>
                 </div>
-                <div class="project-media"><span>Diagram</span></div>
-              </div>
-            </article>
-            <!-- Slide 3 -->
-            <article class="slide" role="group" aria-label="Fitness Tracking App">
-              <div class="project-card">
-                <div class="project-header">
-                  <h3>Fitness Tracking App</h3>
-                  <p class="project-desc">SwiftUI mobile app to create and track workouts, integrating WHOOP data to adjust training intensity dynamically.</p>
-                  <div class="tags"><span class="tag">SwiftUI</span><span class="tag">iOS</span><span class="tag">Health APIs</span></div>
-                  <div class="divider"></div>
-                  <ul class="bullets">
-                    <li>Workout builder with sets/reps/weights.</li>
-                    <li>Zone-based trends & auto-adjustments.</li>
-                    <li>Clean, offline-first local store.</li>
-                  </ul>
+              </article>
+              <!-- Slide 3 -->
+              <article class="slide" role="group" aria-label="Fitness Tracking App">
+                <div class="project-card">
+                  <div class="project-header">
+                    <h3>Fitness Tracking App</h3>
+                    <p class="project-desc">SwiftUI mobile app to create and track workouts, integrating WHOOP data to adjust training intensity dynamically.</p>
+                    <div class="tags"><span class="tag">SwiftUI</span><span class="tag">iOS</span><span class="tag">Health APIs</span></div>
+                    <div class="divider"></div>
+                    <ul class="bullets">
+                      <li>Workout builder with sets/reps/weights.</li>
+                      <li>Zone-based trends & auto-adjustments.</li>
+                      <li>Clean, offline-first local store.</li>
+                    </ul>
+                  </div>
+                  <div class="project-media"><span>App Screens</span></div>
                 </div>
-                <div class="project-media"><span>App Screens</span></div>
-              </div>
-            </article>
+              </article>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <section id="contact" class="anchor">
-    <div class="section-inner">
-      <h2>Contact</h2>
-      <p>Want to collaborate or have a question? Drop me a line and I’ll get back to you.</p>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -200,7 +222,6 @@
     const el = document.getElementById('roleText');
     if(!el) return;
     const phrases = ["An Engineer","A Problem Solver","A Builder"];
-    // Lock subtitle width to longest phrase to prevent layout shift
     el.style.minWidth = (Math.max(...phrases.map(p=>p.length)) + 1) + 'ch';
     const TYPE = 55, ERASE = 40, HOLD = 2000, START = 200;
     let phraseIdx = 0, i = 0, deleting = false;
@@ -224,48 +245,7 @@
     }
   })();
 
-  // === Hero video behavior
-  (function(){
-    const v = document.getElementById('heroVideo');
-    const wrap = v ? v.closest('.hero-gif') : null;
-    if(!v || !wrap) return;
-    const playBtn = wrap.querySelector('.hero-play');
-    const errEl = wrap.querySelector('.hero-video-error');
-
-    // Ensure autoplay-friendly flags
-    v.muted = true; v.playsInline = true; v.autoplay = true;
-
-    function showNeedsInteraction(msg){
-      wrap.classList.add('needs-interaction');
-      if (msg && errEl) errEl.textContent = msg;
-    }
-
-    // Try to autoplay; if blocked, request interaction
-    try {
-      const attempt = v.play();
-      if (attempt && typeof attempt.then === 'function') {
-        attempt.catch(()=> showNeedsInteraction('Autoplay blocked. Tap to play.'));
-      }
-    } catch { showNeedsInteraction('Autoplay blocked. Tap to play.'); }
-
-    // Click/tap to play fallback
-    function tryPlay(){
-      v.play().then(()=> {
-        wrap.classList.remove('needs-interaction');
-        if (playBtn) playBtn.style.display = 'none';
-      }).catch(()=> showNeedsInteraction('Unable to start playback.'));
-    }
-    if (playBtn) playBtn.addEventListener('click', (e)=>{ e.stopPropagation(); tryPlay(); });
-    // As an extra fallback, allow tapping anywhere in the hero video area
-    wrap.addEventListener('click', tryPlay, { once: true });
-
-    // Fade out after it ends
-    v.addEventListener('ended', ()=> { wrap.classList.add('fade'); });
-    // If the src fails (e.g., wrong path), surface a helpful message
-    v.addEventListener('error', ()=> showNeedsInteraction('Intro video failed to load (check /media/hero-wave.mp4 or update the src).'));
-  })();
-
-  // === Shared helpers
+  // === Helpers ===
   function getHeaderH(){
     const v = getComputedStyle(document.documentElement).getPropertyValue('--headerH').trim();
     const n = parseFloat(v);
@@ -273,21 +253,85 @@
   }
   function smoothScrollTo(y){ window.scrollTo({ top: y, behavior: 'smooth' }); }
 
-  // === Size the pin container (looser to guarantee clean release)
+  // === Simple hash router (#/home, #/projects) ===
+  (function(){
+    const pages = {
+      home: document.querySelector('.home-page'),
+      projects: document.querySelector('.projects-page')
+    };
+    const navLinks = Array.from(document.querySelectorAll('nav a'));
+    let homeSpyObserver = null;
+    let projectsInitialized = false;
+
+    function setNavActive(which){
+      navLinks.forEach(a => {
+        const r = a.getAttribute('data-route');
+        a.classList.toggle('active', r === which || (which!== 'projects' && r === 'home' && which === 'home-spy'));
+      });
+    }
+
+    // Scroll spy for home page (intro only)
+    function initHomeSpy(){
+      if(homeSpyObserver) homeSpyObserver.disconnect();
+      const ids = ['intro'];
+      const headerH = getHeaderH();
+      homeSpyObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry => { if(entry.isIntersecting){
+          const id = entry.target.id; // map to nav
+          navLinks.forEach(a=>{
+            const r = a.getAttribute('data-route');
+            const match = (id==='intro' && r==='home');
+            a.classList.toggle('active', match);
+          });
+        }});
+      }, { root: null, threshold: 0.55, rootMargin: `-${headerH}px 0px -40% 0px` });
+      ids.forEach(id => { const el = document.getElementById(id); if(el) homeSpyObserver.observe(el); });
+    }
+
+    function showPage(which){
+      // Toggle visibility
+      pages.home.classList.toggle('active', which !== 'projects');
+      pages.projects.classList.toggle('active', which === 'projects');
+
+      if(which === 'projects'){
+        if(homeSpyObserver) homeSpyObserver.disconnect();
+        setNavActive('projects');
+        if(!projectsInitialized){ initProjectsPage(); projectsInitialized = true; }
+        // Size/recompute when entering
+        sizeProjectsPin();
+      } else {
+        // Home route: set spy and ensure top
+        initHomeSpy();
+        smoothScrollTo(0);
+      }
+    }
+
+    function parseRoute(){
+      const hash = location.hash || '#/home';
+      const m = hash.match(/^#\/(.*)$/);
+      const r = m ? m[1] : 'home';
+      if(['home','projects'].includes(r)) return r;
+      return 'home';
+    }
+
+    window.addEventListener('hashchange', ()=> showPage(parseRoute()));
+    document.addEventListener('DOMContentLoaded', ()=> showPage(parseRoute()));
+  })();
+
+  // === Projects page logic ===
   function sizeProjectsPin() {
     const pinner = document.getElementById('projectsPinner');
-    const pinWrap = pinner?.parentElement;            // .projects-pin
+    if(!pinner) return;
+    const pinWrap = pinner.parentElement;
     const slides = document.querySelectorAll('#projectsCarousel .slide').length;
     if (!pinWrap || !slides) return;
     const hh = getHeaderH();
     const perSlide = Math.max(1, window.innerHeight - hh);
-    // small +1 viewport buffer to avoid sticky trapping on fractional sizes
     pinWrap.style.minHeight = (perSlide * slides + 0.5) + 'px';
   }
   window.addEventListener('resize', sizeProjectsPin);
   document.addEventListener('DOMContentLoaded', sizeProjectsPin);
 
-  // ===== Vertical Carousel core =====
   function initVerticalCarousel(root){
     const track = root.querySelector('.track');
     const slides = Array.from(root.querySelectorAll('.slide'));
@@ -321,15 +365,13 @@
     return { getIndex:()=>index, getLast:()=>slides.length-1, goNext:next, goPrev:prev };
   }
 
-  // ===== Pinned scroll-through behavior (vertical) =====
-  (function(){
+  function initProjectsPage(){
     const pinner = document.getElementById('projectsPinner');
     const carousel = document.getElementById('projectsCarousel');
-    if(pinner) pinner.tabIndex = 0;
     if(!pinner || !carousel) return;
+    pinner.tabIndex = 0;
     const api = initVerticalCarousel(carousel);
 
-    // Guard against double-stepping while the slide animation is running
     const track = carousel.querySelector('.track');
     let animating = false;
     track.addEventListener('transitionstart', ()=> { animating = true; });
@@ -367,14 +409,14 @@
       const y = direction === 'down'
         ? (pinBottom() - window.innerHeight + 2)
         : Math.max(0, pinTop() - hh - 2);
-      // smooth immediate handoff to page scroll
       smoothScrollTo(y);
       setTimeout(()=> { exiting = false; }, 400);
     }
 
     function handleWheel(e){
+      // Only process when projects page is visible
+      if(!document.querySelector('.projects-page').classList.contains('active')) return;
       if(!isPinnedFullscreen()) { setLocked(false); return; }
-      // While a slide is animating, ignore additional wheel events to avoid skipping
       if (animating) { e.preventDefault(); return; }
       const atFirst = api.getIndex() === 0;
       const atLast  = api.getIndex() === api.getLast();
@@ -388,7 +430,7 @@
         dy > 0 ? api.goNext() : api.goPrev();
         setTimeout(()=> wheelCooldown = false, 380);
       } else if (dy > 0 && atLast) {
-        e.preventDefault(); // consume this tick
+        e.preventDefault();
         snapOut('down');
       } else if (dy < 0 && atFirst) {
         e.preventDefault();
@@ -403,6 +445,7 @@
     function tMove(e){ if(!touching) return; touchCurrY = e.touches[0].clientY; }
     function tEnd(){
       if(!touching) return; touching = false;
+      if(!document.querySelector('.projects-page').classList.contains('active')) return;
       if(!isPinnedFullscreen()) { setLocked(false); return; }
       const dy = touchStartY - touchCurrY;
       const threshold = Math.min(90, window.innerHeight * 0.12);
@@ -420,6 +463,7 @@
 
     // Keyboard support with snapOut
     pinner.addEventListener('keydown', (e)=>{
+      if(!document.querySelector('.projects-page').classList.contains('active')) return;
       if(!isPinnedFullscreen()) return;
       const atFirst = api.getIndex() === 0;
       const atLast  = api.getIndex() === api.getLast();
@@ -432,36 +476,90 @@
         else { e.preventDefault(); snapOut('up'); }
       }
     });
-  })();
-  // === Scroll spy for nav (circle highlight on the current section)
+  }
+  
+  /* ===== Intro Overlay Sequencing (single-file) ===== */
   (function(){
-    const ids = ['intro','about','projects','contact'];
-    const linkFor = new Map(ids.map(id => [id, document.querySelector(`nav a[href="#${id}"]`)]));
+    // Only run on non-projects routes
+    var hash = location.hash || '#/home';
+    if (hash === '#/projects') return;
 
-    function setActive(id){
-      linkFor.forEach((a, key) => { if(a) a.classList.toggle('active', key === id); });
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'intro-overlay';
+    overlay.innerHTML = '<div class="sq-wrap"><div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div></div><div class="white-wipe" aria-hidden="true"></div>';
+    document.body.appendChild(overlay);
+
+    var introText = document.querySelector('.home-page #intro .intro-text');
+    if (reduce) {
+      overlay.classList.add('hidden');
+      if (introText) introText.classList.add('show');
+      return;
     }
 
-    // Use header height to offset the observation so the sticky header doesn't block detection
-    const headerH = (function(){
-      const v = getComputedStyle(document.documentElement).getPropertyValue('--headerH').trim();
-      const n = parseFloat(v); return isNaN(n) ? 80 : n;
-    })();
+    function revealPage(){
+      overlay.classList.add('revealing');
+      var wipe = overlay.querySelector('.white-wipe');
+      if (wipe) {
+        wipe.addEventListener('transitionend', function(){
+          overlay.classList.add('hidden');
+          if (introText) introText.classList.add('show');
+        }, { once: true });
+      } else {
+        overlay.classList.add('hidden');
+        if (introText) introText.classList.add('show');
+      }
+    }
 
-    const observer = new IntersectionObserver((entries)=>{
-      entries.forEach(entry => {
-        if(entry.isIntersecting){ setActive(entry.target.id); }
+    var wrap = overlay.querySelector('.sq-wrap');
+    if (wrap) {
+      wrap.addEventListener('animationstart', function(e){
+        if (e.animationName === 'exitUp') { revealPage(); }
       });
-    }, { root: null, threshold: 0.55, rootMargin: `-${headerH}px 0px -40% 0px` });
+    } else {
+      revealPage();
+    }
+  })();
 
-    ids.forEach(id => { const el = document.getElementById(id); if(el) observer.observe(el); });
-
-    // Immediate visual feedback on click
-    document.querySelectorAll('nav a[href^="#"]').forEach(a => {
-      a.addEventListener('click', () => {
-        const id = a.getAttribute('href').slice(1);
-        setActive(id);
-      });
+  // ===== Self-tests (optional): add ?selftest=1 or #/selftest to run =====
+  (function(){
+    const run = location.search.includes('selftest=1') || location.hash.includes('/selftest');
+    if(!run) return;
+    function assert(cond, msg){ (cond ? console.log : console.error)((cond?'PASS':'FAIL')+': '+msg); }
+    function hasKeyframes(name){
+      for(const ss of Array.from(document.styleSheets)){
+        try{
+          const rules = ss.cssRules || [];
+          for(const r of Array.from(rules)){
+            if(r.type === CSSRule.KEYFRAMES_RULE && r.name === name) return true;
+          }
+        }catch(e){ /* ignore cross-origin */ }
+      }
+      return false;
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      assert(!!document.querySelector('nav a[data-route="home"]'), 'nav home link exists');
+      assert(!!document.querySelector('nav a[data-route="projects"]'), 'nav projects link exists');
+      assert(!document.querySelector('nav a[data-route="about"]'), 'nav about link removed');
+      assert(!document.querySelector('nav a[data-route="contact"]'), 'nav contact link removed');
+      assert(!document.getElementById('about'), '#about section removed');
+      assert(!document.getElementById('contact'), '#contact section removed');
+      assert(hasKeyframes('popHold'), '@keyframes popHold exists');
+      assert(hasKeyframes('spin360'), '@keyframes spin360 exists');
+      assert(hasKeyframes('counterSpin'), '@keyframes counterSpin exists');
+      assert(hasKeyframes('exitUp'), '@keyframes exitUp exists');
+      assert(document.querySelectorAll('nav a').length === 2, 'nav has exactly 2 items');
+      assert(!!document.querySelector('.intro-overlay') || location.hash === '#/projects', 'intro overlay exists on home route');
+      // Fade-in behavior check (only on home route)
+      const overlayNode = document.querySelector('.intro-overlay');
+      if (overlayNode) {
+        const sq = document.querySelector('.intro-overlay .square');
+        setTimeout(()=>{
+          const op = parseFloat(getComputedStyle(sq).opacity) || 0;
+          assert(op > 0.4, 'square fades in (opacity > 0.4 after 0.5s)');
+        }, 550);
+      }
     });
   })();
 </script>
