@@ -1,59 +1,469 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owen Kelley | Software Engineer</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio | Software Engineer</title>
+<style>
+  :root { --headerH: 80px; --maxW: 1100px; --cardRadius: 16px; --cardPad: 32px; --gap: 24px; --ink: #0b0b0b; --muted: #6b7280; --line: #e5e7eb; --bgSubtle: #f8fafc; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #fff; color: var(--ink); }
+
+  /* ===== Header ===== */
+  header { position: fixed; top: 0; left: 0; right: 0; height: var(--headerH); display: flex; justify-content: center; align-items: center; padding: 0 20px; background: white; z-index: 100; border-bottom: 1px solid var(--line); }
+  #name { font-weight: bold; text-transform: uppercase; letter-spacing: .06em; }
+  nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; }
+  nav a { text-decoration: none; color: var(--ink); text-transform: capitalize; padding: 8px 14px; border-radius: 999px; line-height: 1; position: relative; transition: background-color .2s ease, outline-color .2s ease, color .2s ease; }
+  nav a.active { outline: 2px solid var(--ink); outline-offset: 2px; background: var(--bgSubtle); }
+  nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 999px; }
+
+  /* ===== Main / Hero ===== */
+  main { padding-top: var(--headerH); }
+  #intro { min-height: calc(100vh - var(--headerH)); display: flex; align-items: center; }
+  .centered-container { width: min(var(--maxW), 92%); margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 40px; text-align: center; }
+  .intro-text { flex: 1; color: #777; font-size: 1.3rem; padding-left: 0; text-align: center; margin: 0 auto; }
+  #intro h1 { font-size: clamp(36px, 6vw, 64px); margin: 0; line-height: 1.05; color: var(--ink); }
+  #subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 12px; line-height: 1.7; min-height: 1.7em; } 
+  #roleText { display: inline-block; min-width: 17ch; }
+  .hero-gif { position: relative; width: min(380px, 60%); margin: 0 auto 16px; }
+  .hero-gif video { width: 100%; height: auto; display: block; border-radius: 12px; }
+  /* overlay for autoplay fallback */
+  .hero-play { position: absolute; inset: 0; display: none; place-items: center; cursor: pointer; border: none; background: rgba(0,0,0,0.45); color: #fff; font-size: 16px; border-radius: 12px; letter-spacing: .02em; }
+  .hero-gif.needs-interaction .hero-play { display: grid; }
+  .hero-video-error { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 12px; color: #b91c1c; }
+  .hero-gif.fade { animation: fadeOut .8s ease forwards; }
+  @media (max-width: 600px) { .hero-gif { width: 70%; } }
+
+  .categories { display: flex; gap: 12px; width: 100%; margin: 28px 0 0; justify-content: center; }
+  a.category-box { flex: 0 1 auto; padding: 12px 18px; border: 2px solid var(--ink); border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1rem; color: var(--ink); background: transparent; }
+  a.category-box:hover { background: var(--ink); color: #fff; }
+
+  /* ===== Sections ===== */
+  section.anchor { scroll-margin-top: var(--headerH); }
+  .section-inner { width: min(var(--maxW), 92%); margin: 0 auto; padding: 56px 0; text-align: left; }
+  .section-inner h2 { margin: 0 0 8px 0; font-size: 28px; letter-spacing: .02em; }
+  .section-inner p { margin: 0; color: var(--muted); line-height: 1.7; }
+
+  /* ===== Projects: Pinned, vertical carousel ===== */
+  #projects { background: var(--bgSubtle); padding: 0; }
+  .projects-pin { position: relative; }
+  .pinner { position: sticky; top: var(--headerH); height: calc(100vh - var(--headerH)); display: grid; grid-template-rows: auto 1fr; gap: 14px; align-content: center; padding: 18px 0; overscroll-behavior-block: contain; }
+  /* body lock while stepping slides */
+  body.no-scroll { overflow: hidden; }
+
+  .pinner > .section-head { width: min(var(--maxW), 92%); margin: 0 auto; }
+
+  .carousel { position: relative; width: min(var(--maxW), 92%); margin: 0 auto; height: 100%; overflow: hidden; border-radius: var(--cardRadius); }
+  .track { display: flex; flex-direction: column; height: 100%; transition: transform 1.5s ease; will-change: transform; }
+  .slide { min-height: 100%; padding: clamp(12px, 2vw, 20px); display: grid; }
+
+  .project-card { align-self: center; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--cardRadius); padding: clamp(20px, 3vw, var(--cardPad)); display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--gap); align-items: stretch; box-shadow: 0 20px 40px rgba(2,6,23,.06); }
+  .project-header { display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; }
+  .project-header h3 { margin: 0; font-size: clamp(18px, 2.2vw, 24px); letter-spacing: .01em; }
+  .project-desc { color: #374151; line-height: 1.7; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+  .tag { font-size: .9rem; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); color: #374151; background: #f9fafb; }
+  .divider { height: 1px; background: var(--line); margin: 6px 0 2px; }
+  .bullets { margin: 0; padding-left: 18px; color: #111827; }
+  .bullets li { margin: 6px 0; line-height: 1.6; }
+  .project-media { border: 1px dashed var(--line); background: #fff; border-radius: 12px; display: grid; place-items: center; min-height: 260px; }
+  .project-media span { opacity: .6; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+
+  footer { background: #000; color: #fff; padding: 20px; text-align: center; }
+
+  .caret { display: inline-block; width: 1ch; border-right: 2px solid #000; margin-left: 2px; animation: blink .9s steps(1,end) infinite; }
+  @keyframes blink { 50% { border-color: transparent; } }
+  @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+  @media (prefers-reduced-motion: reduce) { .caret { animation: none; border-right: 0; } }
+
+  @media (max-width: 1000px) { .project-card { grid-template-columns: 1fr; } .project-media { min-height: 200px; } }
+  @media (max-width: 900px) { .centered-container { width: 92%; flex-direction: column; text-align: center; gap: 24px; } #intro h1 { white-space: normal; } .categories { flex-wrap: wrap; justify-content: center; } }
+  @media (max-width: 600px) { #subtitle { font-size: 1rem; } .slide { padding: 12px; } }
+</style>
 </head>
 <body>
-    <!-- Header with navigation -->
-    <header>
-        <div id="name">OWEN KELLEY</div>
-        <nav>
-            <ul>
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
+<header>
+  <nav>
+    <ul>
+      <li><a href="#intro">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+      </ul>
+  </nav>
+</header>
 
-    <!-- Main content -->
-    <main>
-        <section id="intro">
-            <div class="centered-container">
-                <!-- Left column: text + buttons -->
-                <div class="intro-text">
-                    <h1>Hi, I'm Owen Kelley</h1>
-                    <p id="intro-text">I'm a passionate software engineer with a focus on web development, problem-solving, and building innovative applications.</p>
-                    
-                    <div class="categories">
-                        <div class="category-box">
-                            <h2>About</h2>
-                        </div>
-                        <div class="category-box">
-                            <h2>Projects</h2>
-                        </div>
-                        <div class="category-box">
-                            <h2>Contact</h2>
-                        </div>
-                    </div>
+<main>
+  <!-- HERO -->
+  <section id="intro">
+    <div class="centered-container">
+      <div class="intro-text">
+        <div class="hero-gif">
+          <video id="heroVideo" autoplay muted playsinline preload="metadata">
+            <source src="/media/hero-wave.mp4" type="video/mp4" />
+            <source src="/media/hero-wave.mov" type="video/quicktime" />
+            Sorry, your browser doesn't support embedded videos.
+          </video>
+          <button class="hero-play" type="button" aria-label="Play intro video">Tap to play</button>
+          <div class="hero-video-error" aria-live="polite"></div>
+        </div>
+        <h1 id="headline">Hi I'm Owen</h1>
+        <p id="subtitle"><span id="roleText" aria-live="polite"></span><span class="caret" aria-hidden="true"></span></p>
+        </div>
+      </div>
+    </section>
+
+  <!-- PROJECTS: Pinned vertical scroll-through -->
+  <section id="projects" class="anchor" aria-label="Projects">
+    <div class="projects-pin">
+      <div class="pinner" id="projectsPinner">
+        <div class="section-head">
+          <h2 style="margin:0 0 6px 0;">Projects</h2>
+          <p style="margin:0;color:var(--muted);font-size:.95rem;">Scroll to step through projects. The page continues after the last one.</p>
+        </div>
+        <div class="carousel" id="projectsCarousel" aria-live="polite">
+          <div class="track" role="group" aria-roledescription="carousel" aria-label="Project slides (vertical)">
+            <!-- Slide 1 -->
+            <article class="slide" role="group" aria-label="ADFS + Duo MFA Integration">
+              <div class="project-card">
+                <div class="project-header">
+                  <h3>ADFS + Duo MFA Integration</h3>
+                  <p class="project-desc">Deployed a .NET app for Windows endpoints, integrating ADFS with Duo MFA to harden authentication with minimal user friction.</p>
+                  <div class="tags"><span class="tag">C#</span><span class="tag">.NET</span><span class="tag">ADFS</span><span class="tag">Duo</span><span class="tag">Security</span></div>
+                  <div class="divider"></div>
+                  <ul class="bullets">
+                    <li>Reduced risky sign-ins by 42% post rollout.</li>
+                    <li>Graceful fallbacks for offline devices.</li>
+                    <li>Automated installer & health checks.</li>
+                  </ul>
                 </div>
-    
-                <!-- Right column: stickman image -->
-                <div class="intro-image">
-                    <img src="images/stickman placeholder.png" alt="Stickman waving">
+                <div class="project-media"><span>Image / GIF</span></div>
+              </div>
+            </article>
+            <!-- Slide 2 -->
+            <article class="slide" role="group" aria-label="Active Directory Auth Gateway">
+              <div class="project-card">
+                <div class="project-header">
+                  <h3>Active Directory Auth Gateway</h3>
+                  <p class="project-desc">Azure gateway VM intercepting Kerberos/NTLM to apply conditional access and 2FA—no agents on domain controllers.</p>
+                  <div class="tags"><span class="tag">Azure</span><span class="tag">Networking</span><span class="tag">Kerberos</span><span class="tag">NTLM</span></div>
+                  <div class="divider"></div>
+                  <ul class="bullets">
+                    <li>WFP-based port inspection & policy engine.</li>
+                    <li>Per-request Duo prompt with allow/deny.</li>
+                    <li>Traffic shaping for lab replay tests.</li>
+                  </ul>
                 </div>
-            </div>
-        </section>
-    </main>
+                <div class="project-media"><span>Diagram</span></div>
+              </div>
+            </article>
+            <!-- Slide 3 -->
+            <article class="slide" role="group" aria-label="Fitness Tracking App">
+              <div class="project-card">
+                <div class="project-header">
+                  <h3>Fitness Tracking App</h3>
+                  <p class="project-desc">SwiftUI mobile app to create and track workouts, integrating WHOOP data to adjust training intensity dynamically.</p>
+                  <div class="tags"><span class="tag">SwiftUI</span><span class="tag">iOS</span><span class="tag">Health APIs</span></div>
+                  <div class="divider"></div>
+                  <ul class="bullets">
+                    <li>Workout builder with sets/reps/weights.</li>
+                    <li>Zone-based trends & auto-adjustments.</li>
+                    <li>Clean, offline-first local store.</li>
+                  </ul>
+                </div>
+                <div class="project-media"><span>App Screens</span></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Owen Kelley</p>
-    </footer>
+  <!-- CONTACT -->
+  <section id="contact" class="anchor">
+    <div class="section-inner">
+      <h2>Contact</h2>
+      <p>Want to collaborate or have a question? Drop me a line and I’ll get back to you.</p>
+    </div>
+  </section>
+</main>
 
-    <script src="scripts.js"></script>
+<footer>
+  <p>&copy; 2025 Owen Kelley</p>
+</footer>
+
+<script>
+  // ===== Role Typewriter (subtitle) =====
+  (function(){
+    const el = document.getElementById('roleText');
+    if(!el) return;
+    const phrases = ["An Engineer","A Problem Solver","A Builder"];
+    // Lock subtitle width to longest phrase to prevent layout shift
+    el.style.minWidth = (Math.max(...phrases.map(p=>p.length)) + 1) + 'ch';
+    const TYPE = 55, ERASE = 40, HOLD = 2000, START = 200;
+    let phraseIdx = 0, i = 0, deleting = false;
+    function tick(){
+      const curr = phrases[phraseIdx];
+      if(!deleting){
+        el.textContent = curr.slice(0,i);
+        if(i < curr.length){ i++; setTimeout(tick, TYPE); }
+        else { setTimeout(()=>{ deleting = true; tick(); }, HOLD); }
+      } else {
+        if(i > 0){ i--; el.textContent = curr.slice(0,i); setTimeout(tick, ERASE); }
+        else { deleting = false; phraseIdx = (phraseIdx+1)%phrases.length; setTimeout(tick, TYPE); }
+      }
+    }
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      el.textContent = phrases[0];
+    } else if(document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', ()=> setTimeout(tick, START));
+    } else {
+      setTimeout(tick, START);
+    }
+  })();
+
+  // === Hero video behavior
+  (function(){
+    const v = document.getElementById('heroVideo');
+    const wrap = v ? v.closest('.hero-gif') : null;
+    if(!v || !wrap) return;
+    const playBtn = wrap.querySelector('.hero-play');
+    const errEl = wrap.querySelector('.hero-video-error');
+
+    // Ensure autoplay-friendly flags
+    v.muted = true; v.playsInline = true; v.autoplay = true;
+
+    function showNeedsInteraction(msg){
+      wrap.classList.add('needs-interaction');
+      if (msg && errEl) errEl.textContent = msg;
+    }
+
+    // Try to autoplay; if blocked, request interaction
+    try {
+      const attempt = v.play();
+      if (attempt && typeof attempt.then === 'function') {
+        attempt.catch(()=> showNeedsInteraction('Autoplay blocked. Tap to play.'));
+      }
+    } catch { showNeedsInteraction('Autoplay blocked. Tap to play.'); }
+
+    // Click/tap to play fallback
+    function tryPlay(){
+      v.play().then(()=> {
+        wrap.classList.remove('needs-interaction');
+        if (playBtn) playBtn.style.display = 'none';
+      }).catch(()=> showNeedsInteraction('Unable to start playback.'));
+    }
+    if (playBtn) playBtn.addEventListener('click', (e)=>{ e.stopPropagation(); tryPlay(); });
+    // As an extra fallback, allow tapping anywhere in the hero video area
+    wrap.addEventListener('click', tryPlay, { once: true });
+
+    // Fade out after it ends
+    v.addEventListener('ended', ()=> { wrap.classList.add('fade'); });
+    // If the src fails (e.g., wrong path), surface a helpful message
+    v.addEventListener('error', ()=> showNeedsInteraction('Intro video failed to load (check /media/hero-wave.mp4 or update the src).'));
+  })();
+
+  // === Shared helpers
+  function getHeaderH(){
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--headerH').trim();
+    const n = parseFloat(v);
+    return isNaN(n) ? 80 : n;
+  }
+  function smoothScrollTo(y){ window.scrollTo({ top: y, behavior: 'smooth' }); }
+
+  // === Size the pin container (looser to guarantee clean release)
+  function sizeProjectsPin() {
+    const pinner = document.getElementById('projectsPinner');
+    const pinWrap = pinner?.parentElement;            // .projects-pin
+    const slides = document.querySelectorAll('#projectsCarousel .slide').length;
+    if (!pinWrap || !slides) return;
+    const hh = getHeaderH();
+    const perSlide = Math.max(1, window.innerHeight - hh);
+    // small +1 viewport buffer to avoid sticky trapping on fractional sizes
+    pinWrap.style.minHeight = (perSlide * slides + 0.5) + 'px';
+  }
+  window.addEventListener('resize', sizeProjectsPin);
+  document.addEventListener('DOMContentLoaded', sizeProjectsPin);
+
+  // ===== Vertical Carousel core =====
+  function initVerticalCarousel(root){
+    const track = root.querySelector('.track');
+    const slides = Array.from(root.querySelectorAll('.slide'));
+    let index = 0; // start at first
+
+    function update(){
+      track.style.transform = `translateY(${-index * 100}%)`;
+      slides.forEach((s,i)=> s.setAttribute('aria-hidden', i!==index));
+    }
+    function goTo(i){ index = Math.max(0, Math.min(slides.length-1, i)); update(); }
+    function prev(){ goTo(index-1); }
+    function next(){ goTo(index+1); }
+
+    // Drag/swipe (vertical)
+    let startY = 0, currY = 0, dragging = false;
+    const py = (e)=> e.touches? e.touches[0].clientY : e.clientY;
+    function onDown(e){ dragging=true; startY=py(e); currY=startY; track.style.transition='none'; }
+    function onMove(e){ if(!dragging) return; currY=py(e); const dy=currY-startY; track.style.transform = `translateY(calc(${-index*100}% + ${dy}px))`; }
+    function onUp(){ if(!dragging) return; dragging=false; track.style.transition=''; const dy=currY-startY; const threshold=Math.min(140, window.innerHeight*0.18); if(dy>threshold) prev(); else if(dy<-threshold) next(); else update(); }
+
+    track.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    track.addEventListener('touchstart', onDown, {passive:true});
+    window.addEventListener('touchmove', onMove, {passive:true});
+    window.addEventListener('touchend', onUp);
+
+    window.addEventListener('resize', update);
+    update();
+
+    return { getIndex:()=>index, getLast:()=>slides.length-1, goNext:next, goPrev:prev };
+  }
+
+  // ===== Pinned scroll-through behavior (vertical) =====
+  (function(){
+    const pinner = document.getElementById('projectsPinner');
+    const carousel = document.getElementById('projectsCarousel');
+    if(pinner) pinner.tabIndex = 0;
+    if(!pinner || !carousel) return;
+    const api = initVerticalCarousel(carousel);
+
+    // Guard against double-stepping while the slide animation is running
+    const track = carousel.querySelector('.track');
+    let animating = false;
+    track.addEventListener('transitionstart', ()=> { animating = true; });
+    track.addEventListener('transitionend', ()=> { animating = false; setLocked(false); });
+
+    const body = document.body;
+    let wheelCooldown = false;
+    let exiting = false; // ignore pinned checks briefly during snap-out
+
+    function setLocked(locked){ body.classList.toggle('no-scroll', locked); }
+
+    const pinWrap = pinner.parentElement;           // .projects-pin
+    function pinTop(){ return pinWrap.offsetTop; }
+    function pinBottom(){ return pinWrap.offsetTop + pinWrap.offsetHeight; }
+
+    const io = new IntersectionObserver((entries)=>{
+      if (!entries[0].isIntersecting) { setLocked(false); exiting = false; }
+    }, { root: null, threshold: 0 });
+    if (pinWrap) io.observe(pinWrap);
+
+    function isPinnedFullscreen(){
+      if (exiting) return false; // while snapping out, don't re-trap
+      const r = pinner.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const hh = getHeaderH();
+      const topAligned = r.top <= (hh + 10);
+      const botAligned = r.bottom >= (vh - 10);
+      return topAligned && botAligned;
+    }
+
+    function snapOut(direction){
+      exiting = true;
+      setLocked(false);
+      const hh = getHeaderH();
+      const y = direction === 'down'
+        ? (pinBottom() - window.innerHeight + 2)
+        : Math.max(0, pinTop() - hh - 2);
+      // smooth immediate handoff to page scroll
+      smoothScrollTo(y);
+      setTimeout(()=> { exiting = false; }, 400);
+    }
+
+    function handleWheel(e){
+      if(!isPinnedFullscreen()) { setLocked(false); return; }
+      // While a slide is animating, ignore additional wheel events to avoid skipping
+      if (animating) { e.preventDefault(); return; }
+      const atFirst = api.getIndex() === 0;
+      const atLast  = api.getIndex() === api.getLast();
+      const dy = e.deltaY;
+
+      if ((dy > 0 && !atLast) || (dy < 0 && !atFirst)) {
+        e.preventDefault();
+        if (wheelCooldown) return;
+        wheelCooldown = true;
+        setLocked(true);
+        dy > 0 ? api.goNext() : api.goPrev();
+        setTimeout(()=> wheelCooldown = false, 380);
+      } else if (dy > 0 && atLast) {
+        e.preventDefault(); // consume this tick
+        snapOut('down');
+      } else if (dy < 0 && atFirst) {
+        e.preventDefault();
+        snapOut('up');
+      }
+    }
+    pinner.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Touch scroll -> slide (with snapOut at edges)
+    let touchStartY = 0, touchCurrY = 0, touching = false;
+    function tStart(e){ touching = true; touchStartY = e.touches[0].clientY; touchCurrY = touchStartY; }
+    function tMove(e){ if(!touching) return; touchCurrY = e.touches[0].clientY; }
+    function tEnd(){
+      if(!touching) return; touching = false;
+      if(!isPinnedFullscreen()) { setLocked(false); return; }
+      const dy = touchStartY - touchCurrY;
+      const threshold = Math.min(90, window.innerHeight * 0.12);
+      const atFirst = api.getIndex() === 0;
+      const atLast  = api.getIndex() === api.getLast();
+      if (dy > threshold && !atLast) { setLocked(true); api.goNext(); }
+      else if (dy < -threshold && !atFirst) { setLocked(true); api.goPrev(); }
+      else if (dy > 0 && atLast) { snapOut('down'); }
+      else if (dy < 0 && atFirst) { snapOut('up'); }
+      else { setLocked(false); }
+    }
+    pinner.addEventListener('touchstart', tStart, { passive: true });
+    pinner.addEventListener('touchmove', tMove, { passive: true });
+    pinner.addEventListener('touchend', tEnd);
+
+    // Keyboard support with snapOut
+    pinner.addEventListener('keydown', (e)=>{
+      if(!isPinnedFullscreen()) return;
+      const atFirst = api.getIndex() === 0;
+      const atLast  = api.getIndex() === api.getLast();
+      if(e.key === 'PageDown' || e.key === 'ArrowDown') {
+        if(!atLast) { e.preventDefault(); setLocked(true); api.goNext(); }
+        else { e.preventDefault(); snapOut('down'); }
+      }
+      if(e.key === 'PageUp' || e.key === 'ArrowUp') {
+        if(!atFirst) { e.preventDefault(); setLocked(true); api.goPrev(); }
+        else { e.preventDefault(); snapOut('up'); }
+      }
+    });
+  })();
+  // === Scroll spy for nav (circle highlight on the current section)
+  (function(){
+    const ids = ['intro','about','projects','contact'];
+    const linkFor = new Map(ids.map(id => [id, document.querySelector(`nav a[href="#${id}"]`)]));
+
+    function setActive(id){
+      linkFor.forEach((a, key) => { if(a) a.classList.toggle('active', key === id); });
+    }
+
+    // Use header height to offset the observation so the sticky header doesn't block detection
+    const headerH = (function(){
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--headerH').trim();
+      const n = parseFloat(v); return isNaN(n) ? 80 : n;
+    })();
+
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry => {
+        if(entry.isIntersecting){ setActive(entry.target.id); }
+      });
+    }, { root: null, threshold: 0.55, rootMargin: `-${headerH}px 0px -40% 0px` });
+
+    ids.forEach(id => { const el = document.getElementById(id); if(el) observer.observe(el); });
+
+    // Immediate visual feedback on click
+    document.querySelectorAll('nav a[href^="#"]').forEach(a => {
+      a.addEventListener('click', () => {
+        const id = a.getAttribute('href').slice(1);
+        setActive(id);
+      });
+    });
+  })();
+</script>
 </body>
 </html>

@@ -76,7 +76,7 @@ main {
 .intro-text {
     flex: 1;
     color: #777;       /* Apply grey to everything in this column */
-    font-size: 1.1em;  /* Slightly larger than default text size */
+    font-size: 1.4em;  /* Slightly larger than default text size */
 }
 
 .intro-text h1 {
@@ -97,7 +97,7 @@ main {
 
 /* Title */
 #intro h1 {
-    font-size: 4em;
+    font-size: 3.5em;
     margin-top: 100px;
     margin-bottom: 0;
     line-height: 1.05;
@@ -169,7 +169,7 @@ footer {
 }
 
 @media (max-width: 600px) {
-    .centered-container { width: 90%; }
+    .centered-container { width: 100%; }
     #intro h1 { font-size: 2.6em; }
-    #subtitle { font-size: 1.2em; }
+    #subtitle { font-size: 1.4em; }
 }
