@@ -26,8 +26,8 @@
   #intro h1 { font-size: clamp(36px, 6vw, 64px); margin: 0; line-height: 1.05; color: var(--ink); }
   #subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 12px; line-height: 1.7; min-height: 1.7em; } 
   #roleText { display: inline-block; min-width: 17ch; }
-  .hero-gif { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: min(380px, 60%); margin: 0; }
-  .hero-gif video { width: 100%; height: auto; display: block; border-radius: 12px; box-shadow: none; }
+  .hero-gif { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: min(380px, 60%); margin: 0; background: #FCFEFB; border-radius: 12px; overflow: hidden; aspect-ratio: 1.21154; }
+  .hero-gif video { width: 100%; height: auto; display: block; border-radius: 0; box-shadow: none; filter: none; outline: none; border: 0; background: transparent; }
   /* overlay for autoplay fallback */
   .hero-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; cursor: pointer; border: 2px solid #111; background: rgba(255,255,255,0.92); color: #111; font-size: 14px; padding: 8px 14px; border-radius: 999px; letter-spacing: .02em; box-shadow: none; }
   .hero-gif.needs-interaction .hero-play { display: inline-grid; }
