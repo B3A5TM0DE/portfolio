@@ -22,15 +22,15 @@
   main { padding-top: var(--headerH); }
   #intro { min-height: calc(100vh - var(--headerH)); display: flex; align-items: center; }
   .centered-container { width: min(var(--maxW), 92%); margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 40px; text-align: center; }
-  .intro-text { flex: 1; color: #777; font-size: 1.3rem; padding-left: 0; text-align: center; margin: 0 auto; }
+  .intro-text { position: relative; display: grid; justify-items: center; flex: 1; color: #777; font-size: 1.3rem; padding-left: 0; text-align: center; margin: 0 auto; }
   #intro h1 { font-size: clamp(36px, 6vw, 64px); margin: 0; line-height: 1.05; color: var(--ink); }
   #subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 12px; line-height: 1.7; min-height: 1.7em; } 
   #roleText { display: inline-block; min-width: 17ch; }
-  .hero-gif { position: relative; width: min(380px, 60%); margin: 0 auto 16px; }
-  .hero-gif video { width: 100%; height: auto; display: block; border-radius: 12px; }
+  .hero-gif { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: min(380px, 60%); margin: 0; }
+  .hero-gif video { width: 100%; height: auto; display: block; border-radius: 12px; box-shadow: none; }
   /* overlay for autoplay fallback */
-  .hero-play { position: absolute; inset: 0; display: none; place-items: center; cursor: pointer; border: none; background: rgba(0,0,0,0.45); color: #fff; font-size: 16px; border-radius: 12px; letter-spacing: .02em; }
-  .hero-gif.needs-interaction .hero-play { display: grid; }
+  .hero-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; cursor: pointer; border: 2px solid #111; background: rgba(255,255,255,0.92); color: #111; font-size: 14px; padding: 8px 14px; border-radius: 999px; letter-spacing: .02em; box-shadow: none; }
+  .hero-gif.needs-interaction .hero-play { display: inline-grid; }
   .hero-video-error { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 12px; color: #b91c1c; }
   .hero-gif.fade { animation: fadeOut .8s ease forwards; }
   @media (max-width: 600px) { .hero-gif { width: 70%; } }
