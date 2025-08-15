@@ -220,8 +220,13 @@ footer { display: none; }
     min-height: 1em;
   }
   
-  /* Fade-in for the name */
-  :root { --name-fade-dur: 1.2s; } /* tweak to taste */
+  /* speed knobs */
+:root {
+    --name-fade-dur: 1.2s;   /* your fade-in time */
+    --aurora-speed: 8s;      /* smaller = faster color change */
+  }
+  
+  /* fade-in for the name (you already have the JS that adds .show to #bigLine) */
   #nameLine {
     display: inline-block;
     opacity: 0;
@@ -232,50 +237,57 @@ footer { display: none; }
   }
   .intro-line.big.show #nameLine { opacity: 1; transform: none; }
   
-  /* Aurora animated gradient on the name text */
+  /* Aurora text that never hits white */
   .aurora-text{
-    /* Wide palette (no white) */
-    --c1: #22d3ee; /* cyan */
-    --c2: #10b981; /* green */
-    --c3: #f59e0b; /* amber */
-    --c4: #ef4444; /* red */
-    --c5: #a855f7; /* violet */
-    --c6: #3b82f6; /* blue */
+    /* your palette from the snippet (no white) */
+    --c1: #00c2ff; /* cyan */
+    --c2: #33ff8c; /* green */
+    --c3: #ffc640; /* amber */
+    --c4: #e54cff; /* magenta */
   
-    /* Base layer so text never goes white */
-    --base1: #22d3ee;
-    --base2: #a855f7;
-    --base3: #ef4444;
-    --aurora-speed: 10s; /* faster than before */
+    /* base layer so transparent zones NEVER show page white */
+    --base1: #00c2ff;
+    --base2: #e54cff;
+    --base3: #33ff8c;
   
-    /* TOP → BOTTOM (last = base) */
+    /* TOP → BOTTOM (last layer = base fill) */
     background:
-      radial-gradient(120% 140% at 20% 120%, var(--c1) 0%, rgba(34,211,238,0) 60%),
-      radial-gradient(120% 140% at 80% -20%, var(--c2) 0%, rgba(37,99,235,0) 60%),
-      radial-gradient(140% 120% at 0% 0%,    var(--c3) 0%, rgba(139,92,246,0) 60%),
-      radial-gradient(140% 120% at 100% 100%,var(--c4) 0%, rgba(16,185,129,0) 60%),
-      /* Base layer so no white ever shows through */
+      conic-gradient(from var(--angle) at 50% 50%,
+        var(--c1), var(--c2), var(--c3), var(--c4), var(--c1)),
+      radial-gradient(120% 140% at 20% 120%, var(--c1) 0%, rgba(0,194,255,0) 60%),
+      radial-gradient(120% 140% at 80% -20%, var(--c3) 0%, rgba(255,198,64,0) 60%),
+      radial-gradient(140% 120% at 0% 0%,    var(--c2) 0%, rgba(51,255,140,0) 60%),
+      radial-gradient(140% 120% at 100% 100%,var(--c4) 0%, rgba(229,76,255,0) 60%),
+      /* BASE gradient: always color, never white */
       linear-gradient(90deg, var(--base1), var(--base2), var(--base3));
-    background-size: 200% 200%;
-    background-position: 0% 100%, 100% 0%, 0% 0%, 100% 100%, 0% 50%;
+  
+    background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%;
+    background-position: 50% 50%, 0% 100%, 100% 0%, 0% 0%, 100% 100%, var(--bgx, 0%) 50%;
   
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   
-    animation: auroraShift var(--aurora-speed) ease-in-out infinite alternate;
-    will-change: background-position;
+    /* animate hue spin + gentle drift; NO blend modes, so no white */
+    animation:
+      hueSpin var(--aurora-speed) linear infinite,
+      drift calc(var(--aurora-speed) * 2) ease-in-out infinite alternate;
+  
+    /* optional guard against anything getting too bright */
+    filter: saturate(1.1) brightness(0.95);
   }
   
-  /* Pause animation until shown, then run (keeps CPU calm before reveal) */
+  /* Pause until reveal */
   .intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
   .intro-line.big.show .aurora-text { animation-play-state: running; }
   
-  @keyframes auroraShift{
-    0%   { background-position:   0% 100%, 100% 0%,   0%   0%, 100% 100%,   0% 50%; }
-    50%  { background-position:  50%  50%,  50% 50%, 50%  50%,  50%  50%,  50% 50%; }
-    100% { background-position: 100%   0%,   0% 100%, 100% 100%,  0%   0%, 100% 50%; }
-  }  
+  /* Custom property animation for the conic angle */
+  @property --angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  @keyframes hueSpin { to { --angle: 360deg; } }
+  @keyframes drift   { to { --bgx: 100%; } }
+  
+  /* keep layout from jumping when name appears */
+  .intro-line.big { min-height: 1em; }
   
   /* Optional: if user has Reduce Motion, just show instantly */
   @media (prefers-reduced-motion: reduce) {
