@@ -186,7 +186,20 @@ footer { display: none; }
     opacity: 0;                  /* extra safety */
     animation-play-state: paused;/* stop blink timer */
   }
-  
+.name-spot { position: relative; display: inline-block; }
+.name-spot::before{
+  content:"";
+  position:absolute;
+  inset:-12% -8%;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:-1;
+  background: radial-gradient(60% 70% at 50% 55%,
+              rgba(0,0,0,.10) 0%,
+              rgba(0,0,0,0) 70%);
+  filter: blur(8px);
+}
+
   .intro-lines .intro-line.big.typing .caret {
     display: block;              /* show only while typing */
     opacity: 1;
@@ -222,8 +235,11 @@ footer { display: none; }
   
   /* speed knobs */
 /* Black hero so colors pop */
-#intro { background: #0b0b0f; }
-.intro-line.small { color: #9ca3af; } /* legible on black */
+/* revert hero background so the site stays white */
+#intro { background: transparent !important; }
+
+/* and put the small line color back to your light gray */
+.intro-line.small { color: #6b7280; }
 
 /* Keep layout from jumping */
 .intro-line.big { min-height: 1em; }
