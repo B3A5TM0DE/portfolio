@@ -126,6 +126,8 @@
   .intro-overlay.decode-phase { --r: 260px; }
   .intro-overlay.decode-phase .reveal-layer{ -webkit-mask-image: none; mask-image: none; }
   .intro-overlay.decode-phase .decode{ color:#E5E7EB; }
+  /* Hide undiscovered hints during decode so arrows don't flash when mask lifts */
+  .intro-overlay.decode-phase .hint:not(.found){ opacity:0 !important; }
   /* Top-center decode message */
   .intro-overlay .top-decode{ position:absolute; top:12%; left:50%; transform: translateX(-50%) translateY(-2px); z-index:2; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; letter-spacing:.10em; color:#BFE7F2; opacity:0; transition: opacity .35s ease, transform .35s ease; pointer-events:none; }
   .intro-overlay .top-decode.show{ opacity:1; transform: translateX(-50%) translateY(0); }
@@ -135,7 +137,8 @@
   .intro-overlay .hint.h-left{ top:30%; left:12%; }
   .intro-overlay .hint.h-bottom{ bottom:12%; left:50%; transform: translateX(-50%); }
   .intro-overlay .hint-text{ white-space:nowrap; }
-  .intro-overlay .hint-arrow{ display:inline-block; font-size:14px; line-height:1; }
+  .intro-overlay .hint-arrow{ display:inline-block; font-size:14px; line-height:1; opacity:0; transition: opacity .25s ease; }
+  .intro-overlay .hint.started .hint-arrow, .intro-overlay .hint.found .hint-arrow { opacity:.9; }
   .intro-overlay .hint.found{ opacity:1; filter: drop-shadow(0 0 8px rgba(34,211,238,.55)); z-index:4; }
 
   @keyframes popHold {
@@ -576,7 +579,7 @@
     // One-time hint decode (masked): triggers when cursor spotlight nears hint
     function startHintDecodeFor(h){
       if(h.started || !h.text) return;
-      h.started = true;
+      h.started = true; h.el.classList.add('started');
       var target = 'this way';
       var charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*?';
       var duration = 900, interval = 40, steps = Math.max(1, Math.floor(duration/interval));
@@ -684,8 +687,7 @@
       wr.addEventListener('click', startDecode);
       wr.addEventListener('keydown', onKey);
     }
-    // Fallback: allow clicking anywhere on the overlay to start
-    overlay.addEventListener('click', startDecode);
+    // (Removed) Fallback click-anywhere behavior to avoid accidental starts
 
     var introText = document.querySelector('.home-page #intro .intro-text');
     if (reduce) {
