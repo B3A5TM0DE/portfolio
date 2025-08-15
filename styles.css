@@ -198,12 +198,13 @@ footer { display: none; }
     min-height: 1em;          /* ~one line of the big font */
   }
   
-  /* Fade-in for the name */
   #nameLine {
     display: inline-block;
     opacity: 0;
     transform: translateY(6px);
-    transition: opacity .6s cubic-bezier(.2,.7,0,1), transform .6s cubic-bezier(.2,.7,0,1);
+    transition:
+      opacity var(--name-fade-dur) cubic-bezier(.2,.7,0,1),
+      transform var(--name-fade-dur) cubic-bezier(.2,.7,0,1);
   }
   
   /* When ready, reveal */
