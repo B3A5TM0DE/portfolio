@@ -148,33 +148,42 @@
     if(!hiEl || !nameEl) return;
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const HI    = "Hi, my name is";
-    const NAME  = "Owen";
-
-    const TYPE  = 75;     // ms per character
-    const START = 900;    // delay before starting (lets your overlay settle)
-    const GAP   = 350;    // delay between finishing HI and starting NAME
+    const HI   = "Hi, my name is";
+    const NAME = "Owen";
+    const TYPE = 75;
 
     function typeTo(el, text, i = 0, done){
       if (reduce) { el.textContent = text; done && done(); return; }
       el.textContent = text.slice(0, i);
-      if (i < text.length) {
-        setTimeout(() => typeTo(el, text, i + 1, done), TYPE);
-      } else {
-        done && done();
-      }
+      if (i < text.length) setTimeout(() => typeTo(el, text, i + 1, done), TYPE);
+      else done && done();
     }
 
     function startTyping(){
-      typeTo(hiEl, HI, 0, () => setTimeout(() => typeTo(nameEl, NAME), GAP));
+      // small line first, then big line
+      typeTo(hiEl, HI, 0, () => setTimeout(() => typeTo(nameEl, NAME), 300));
     }
 
+    let started = false;
+    function kick(){
+      if (started) return;
+      // don’t run on the projects route
+      if ((location.hash || '#/home') === '#/projects') return;
+      started = true;
+      startTyping();
+    }
+
+    // Start right when the overlay reveals the page
+    window.addEventListener('hero-revealed', kick, { once: true });
+
+    // Fallback (e.g., overlay skipped)
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(startTyping, START));
+      document.addEventListener('DOMContentLoaded', () => setTimeout(kick, 50));
     } else {
-      setTimeout(startTyping, START);
+      setTimeout(kick, 50);
     }
   })();
+
   // === Helpers ===
   function getHeaderH(){
     const v = getComputedStyle(document.documentElement).getPropertyValue('--headerH').trim();
@@ -572,6 +581,7 @@
     if (reduce) {
       overlay.classList.add('hidden');
       if (introText) introText.classList.add('show');
+      window.dispatchEvent(new Event('hero-revealed'));
       return;
     }
 
@@ -584,6 +594,7 @@
           clearTopTimers();
           overlay.classList.add('hidden');
           if (introText) introText.classList.add('show');
+          window.dispatchEvent(new Event('hero-revealed'));
         }, { once: true });
       } else {
         clearTopTimers();
