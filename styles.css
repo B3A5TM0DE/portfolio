@@ -180,6 +180,46 @@ footer { display: none; }
 .intro-overlay .hint.started .hint-arrow, .intro-overlay .hint.found .hint-arrow { opacity:.9; }
 .intro-overlay .hint.found{ opacity:1; filter: drop-shadow(0 0 8px rgba(34,211,238,.55)); z-index:4; }
 
+/* Big-line caret is hidden until typing starts */
+.intro-lines .intro-line.big .caret {
+    display: none;               /* fully remove it */
+    opacity: 0;                  /* extra safety */
+    animation-play-state: paused;/* stop blink timer */
+  }
+  
+  .intro-lines .intro-line.big.typing .caret {
+    display: block;              /* show only while typing */
+    opacity: 1;
+    animation-play-state: running;
+  }
+
+  /* Reserve vertical space so "Hi, my name is" doesn't jump */
+.intro-line.big { 
+    min-height: 1em;          /* ~one line of the big font */
+  }
+  
+  /* Fade-in for the name */
+  #nameLine {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .6s cubic-bezier(.2,.7,0,1), transform .6s cubic-bezier(.2,.7,0,1);
+  }
+  
+  /* When ready, reveal */
+  .intro-line.big.show #nameLine {
+    opacity: 1;
+    transform: none;
+  }
+  
+  /* Make sure no big caret ever shows (in case it's still in DOM) */
+  .intro-line.big .caret { display: none !important; }
+  
+  /* Optional: if user has Reduce Motion, just show instantly */
+  @media (prefers-reduced-motion: reduce) {
+    #nameLine { transition: none; opacity: 1; transform: none; }
+  }
+  
 @keyframes popHold {
   0%   { transform: scale(0) rotate(0deg) translateY(0); opacity: 0; }
   20%  { transform: scale(1) rotate(0deg) translateY(0); opacity: 1; }
@@ -193,3 +233,4 @@ footer { display: none; }
   .intro-overlay { display: none !important; }
   .intro-text { opacity: 1 !important; transform: none !important; }
 }
+

@@ -30,7 +30,6 @@
           
             <div class="intro-line big gradient">
               <span id="nameLine"></span>
-              <span class="caret caret-big" aria-hidden="true"></span>
             </div>
           </div>
           
@@ -116,41 +115,14 @@
 <script>
   // ===== Role Typewriter (subtitle) =====
   (function(){
-    const el = document.getElementById('roleText');
-    if(!el) return;
-    const phrases = ["An Engineer","A Problem Solver","A Builder"];
-    el.style.minWidth = (Math.max(...phrases.map(p=>p.length)) + 1) + 'ch';
-    const TYPE = 90, ERASE = 60, HOLD = 2400, START = 1300;
-    let phraseIdx = 0, i = 0, deleting = false;
-    function tick(){
-      const curr = phrases[phraseIdx];
-      if(!deleting){
-        el.textContent = curr.slice(0,i);
-        if(i < curr.length){ i++; setTimeout(tick, TYPE); }
-        else { setTimeout(()=>{ deleting = true; tick(); }, HOLD); }
-      } else {
-        if(i > 0){ i--; el.textContent = curr.slice(0,i); setTimeout(tick, ERASE); }
-        else { deleting = false; phraseIdx = (phraseIdx+1)%phrases.length; setTimeout(tick, TYPE); }
-      }
-    }
-    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-      el.textContent = phrases[0];
-    } else if(document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', ()=> setTimeout(tick, START));
-    } else {
-      setTimeout(tick, START);
-    }
-  })();
-
-  (function(){
     const hiEl   = document.getElementById('hiLine');
     const nameEl = document.getElementById('nameLine');
     if(!hiEl || !nameEl) return;
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const HI   = "Hi, my name is";
-    const NAME = "Owen.";
-    const TYPE = 125;
+    const NAME = "Owen.";    // keep your period if you want it
+    const TYPE = 125;        // slow it down if you like
 
     function typeTo(el, text, i = 0, done){
       if (reduce) { el.textContent = text; done && done(); return; }
@@ -161,25 +133,19 @@
 
     function startTyping(){
       typeTo(hiEl, HI, 0, () => {
-        document.querySelector('.intro-line.small .caret')?.remove();
+        document.querySelector('.intro-line.small .caret')?.remove();   // remove small caret
 
-        const bigLine = document.querySelector('.intro-line.big');
-        bigLine?.classList.add('typing'); // show caret for the big line
-
-        setTimeout(() =>
-          typeTo(nameEl, NAME, 0, () => {
-            bigLine?.classList.remove('typing');          // hide again
-            document.querySelector('.intro-line.big .caret')?.remove(); // and remove it
-          }),
-        300);
+        // Slight pause, then set text and fade the big line in
+        setTimeout(() => {
+          nameEl.textContent = NAME;
+          (document.getElementById('bigLine') || document.querySelector('.intro-line.big'))?.classList.add('show');
+        }, 300);
       });
-  }
-
+    }
 
     let started = false;
     function kick(){
       if (started) return;
-      // don't run on projects route
       if ((location.hash || '#/home') === '#/projects') return;
       started = true;
       startTyping();
