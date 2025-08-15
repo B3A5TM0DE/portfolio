@@ -221,73 +221,68 @@ footer { display: none; }
   }
   
   /* speed knobs */
-:root {
-    --name-fade-dur: 1.2s;   /* your fade-in time */
-    --aurora-speed: 8s;      /* smaller = faster color change */
+/* knobs */
+:root{
+    --aurora-speed: 8s;       /* smaller = faster */
+    --name-fade-dur: 1.2s;    /* fade-in time you already use */
+    --aurora-intensity: 0.38; /* lower = softer color, raise to 0.5 if you want more pop */
   }
   
-  /* fade-in for the name (you already have the JS that adds .show to #bigLine) */
-  #nameLine {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(6px);
+  /* fade-in (unchanged) */
+  #nameLine{
+    display:inline-block;
+    opacity:0;
+    transform:translateY(6px);
     transition:
       opacity var(--name-fade-dur) cubic-bezier(.2,.7,0,1),
       transform var(--name-fade-dur) cubic-bezier(.2,.7,0,1);
   }
-  .intro-line.big.show #nameLine { opacity: 1; transform: none; }
+  .intro-line.big.show #nameLine{ opacity:1; transform:none; }
   
-  /* Aurora text that never hits white */
+  /* Aurora text — no focal point, no white */
   .aurora-text{
-    /* your palette from the snippet (no white) */
-    --c1: #00c2ff; /* cyan */
-    --c2: #33ff8c; /* green */
-    --c3: #ffc640; /* amber */
-    --c4: #e54cff; /* magenta */
+    /* your palette from the reference */
+    --c1: 0,194,255;  /* #00c2ff */
+    --c2: 51,255,140; /* #33ff8c */
+    --c3: 255,198,64; /* #ffc640 */
+    --c4: 229,76,255; /* #e54cff */
   
-    /* base layer so transparent zones NEVER show page white */
-    --base1: #00c2ff;
-    --base2: #e54cff;
-    --base3: #33ff8c;
+    /* base gradient so transparent areas never reveal page white */
+    --base1: #0ea5b7; /* deeper cyan */
+    --base2: #7c3aed; /* violet */
   
-    /* TOP → BOTTOM (last layer = base fill) */
+    /* three large DIAGONAL layers + one base layer */
     background:
-      conic-gradient(from var(--angle) at 50% 50%,
-        var(--c1), var(--c2), var(--c3), var(--c4), var(--c1)),
-      radial-gradient(120% 140% at 20% 120%, var(--c1) 0%, rgba(0,194,255,0) 60%),
-      radial-gradient(120% 140% at 80% -20%, var(--c3) 0%, rgba(255,198,64,0) 60%),
-      radial-gradient(140% 120% at 0% 0%,    var(--c2) 0%, rgba(51,255,140,0) 60%),
-      radial-gradient(140% 120% at 100% 100%,var(--c4) 0%, rgba(229,76,255,0) 60%),
-      /* BASE gradient: always color, never white */
-      linear-gradient(90deg, var(--base1), var(--base2), var(--base3));
+      linear-gradient(120deg, rgba(var(--c1), var(--aurora-intensity)) 0%,  rgba(var(--c2), var(--aurora-intensity)) 100%),
+      linear-gradient(300deg, rgba(var(--c3), var(--aurora-intensity)) 0%,  rgba(var(--c4), var(--aurora-intensity)) 100%),
+      linear-gradient( 30deg, rgba(var(--c2), calc(var(--aurora-intensity) * .8)) 0%, rgba(var(--c1), calc(var(--aurora-intensity) * .8)) 100%),
+      linear-gradient(90deg, var(--base1), var(--base2)); /* base: always colored */
   
-    background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%;
-    background-position: 50% 50%, 0% 100%, 100% 0%, 0% 0%, 100% 100%, var(--bgx, 0%) 50%;
+    /* oversized, so motion is smooth and there’s no center glare */
+    background-size: 220% 220%, 240% 240%, 200% 200%, 100% 100%;
+    background-position: 0% 50%, 100% 50%, 50% 0%, 50% 50%;
   
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   
-    /* animate hue spin + gentle drift; NO blend modes, so no white */
-    animation:
-      hueSpin var(--aurora-speed) linear infinite,
-      drift calc(var(--aurora-speed) * 2) ease-in-out infinite alternate;
-  
-    /* optional guard against anything getting too bright */
-    filter: saturate(1.1) brightness(0.95);
+    /* drift the layers — the last position stays constant (base layer) */
+    animation: auroraSlide var(--aurora-speed) ease-in-out infinite alternate;
+    filter: saturate(1.05) brightness(.95);
   }
   
-  /* Pause until reveal */
+  /* only animate when revealed */
   .intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
-  .intro-line.big.show .aurora-text { animation-play-state: running; }
+  .intro-line.big.show       .aurora-text { animation-play-state: running; }
   
-  /* Custom property animation for the conic angle */
-  @property --angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-  @keyframes hueSpin { to { --angle: 360deg; } }
-  @keyframes drift   { to { --bgx: 100%; } }
-  
-  /* keep layout from jumping when name appears */
+  /* avoid vertical jump when name appears */
   .intro-line.big { min-height: 1em; }
+  
+  @keyframes auroraSlide{
+    0%   { background-position: 0% 50%,   100% 50%, 50%   0%, 50% 50%; }
+    50%  { background-position: 60% 40%,   0%  60%, 60% 100%, 50% 50%; }
+    100% { background-position:100% 100%, 40%   0%,  0%  50%, 50% 50%; }
+  }  
   
   /* Optional: if user has Reduce Motion, just show instantly */
   @media (prefers-reduced-motion: reduce) {
