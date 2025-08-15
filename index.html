@@ -22,8 +22,18 @@
     <section id="intro">
       <div class="centered-container">
         <div class="intro-text" id="introText">
-          <h1 id="headline">Hi I'm Owen</h1>
-          <p id="subtitle"><span id="roleText" aria-live="polite"></span><span class="caret" aria-hidden="true"></span></p>
+          <div class="intro-lines">
+            <div class="intro-line small">
+              <span id="hiLine"></span>
+              <span class="caret" aria-hidden="true"></span>
+            </div>
+          
+            <div class="intro-line big gradient">
+              <span id="nameLine"></span>
+              <span class="caret caret-big" aria-hidden="true"></span>
+            </div>
+          </div>
+          
         </div>
       </div>
     </section>
@@ -132,6 +142,39 @@
     }
   })();
 
+  (function(){
+    const hiEl   = document.getElementById('hiLine');
+    const nameEl = document.getElementById('nameLine');
+    if(!hiEl || !nameEl) return;
+
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const HI    = "Hi, my name is";
+    const NAME  = "Owen";
+
+    const TYPE  = 75;     // ms per character
+    const START = 900;    // delay before starting (lets your overlay settle)
+    const GAP   = 350;    // delay between finishing HI and starting NAME
+
+    function typeTo(el, text, i = 0, done){
+      if (reduce) { el.textContent = text; done && done(); return; }
+      el.textContent = text.slice(0, i);
+      if (i < text.length) {
+        setTimeout(() => typeTo(el, text, i + 1, done), TYPE);
+      } else {
+        done && done();
+      }
+    }
+
+    function startTyping(){
+      typeTo(hiEl, HI, 0, () => setTimeout(() => typeTo(nameEl, NAME), GAP));
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(startTyping, START));
+    } else {
+      setTimeout(startTyping, START);
+    }
+  })();
   // === Helpers ===
   function getHeaderH(){
     const v = getComputedStyle(document.documentElement).getPropertyValue('--headerH').trim();
@@ -561,4 +604,3 @@
 </script>
 </body>
 </html>
-  
