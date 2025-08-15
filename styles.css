@@ -70,7 +70,8 @@ main { padding-top: var(--headerH); }
   }
   
   .caret-big { border-right-width: 4px; height: 1em; vertical-align: -0.08em; }  
-  
+  .intro-line.big .caret { opacity: 0; }
+  .intro-line.big.typing .caret { opacity: 1; }
 /* ===== Sections ===== */
 section.anchor { scroll-margin-top: var(--headerH); }
 .section-inner { width: min(var(--maxW), 92%); margin: 0 auto; padding: 56px 0; text-align: left; }

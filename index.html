@@ -149,8 +149,8 @@
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const HI   = "Hi, my name is";
-    const NAME = "Owen";
-    const TYPE = 75;
+    const NAME = "Owen.";
+    const TYPE = 125;
 
     function typeTo(el, text, i = 0, done){
       if (reduce) { el.textContent = text; done && done(); return; }
@@ -160,8 +160,21 @@
     }
 
     function startTyping(){
-      typeTo(hiEl, HI, 0, () => setTimeout(() => typeTo(nameEl, NAME), 300));
-    }
+      typeTo(hiEl, HI, 0, () => {
+        document.querySelector('.intro-line.small .caret')?.remove();
+
+        const bigLine = document.querySelector('.intro-line.big');
+        bigLine?.classList.add('typing'); // show caret for the big line
+
+        setTimeout(() =>
+          typeTo(nameEl, NAME, 0, () => {
+            bigLine?.classList.remove('typing');          // hide again
+            document.querySelector('.intro-line.big .caret')?.remove(); // and remove it
+          }),
+        300);
+      });
+  }
+
 
     let started = false;
     function kick(){
