@@ -215,6 +215,55 @@ footer { display: none; }
   
   /* Make sure no big caret ever shows (in case it's still in DOM) */
   .intro-line.big .caret { display: none !important; }
+  /* Reserve space so the small line doesn't jump */
+.intro-line.big { 
+    min-height: 1em;
+  }
+  
+  /* Fade-in for the name */
+  :root { --name-fade-dur: 1.2s; } /* tweak to taste */
+  #nameLine {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity var(--name-fade-dur) cubic-bezier(.2,.7,0,1),
+      transform var(--name-fade-dur) cubic-bezier(.2,.7,0,1);
+  }
+  .intro-line.big.show #nameLine { opacity: 1; transform: none; }
+  
+  /* Aurora animated gradient on the name text */
+  .aurora-text{
+    --c1: #22d3ee; /* cyan */
+    --c2: #2563eb; /* blue */
+    --c3: #8b5cf6; /* violet */
+    --c4: #10b981; /* green */
+    --aurora-speed: 18s; /* slower waves -> larger number */
+  
+    background:
+      radial-gradient(120% 140% at 20% 120%, var(--c1) 0%, transparent 60%),
+      radial-gradient(120% 140% at 80% -20%, var(--c2) 0%, transparent 60%),
+      radial-gradient(140% 120% at 0% 0%,    var(--c3) 0%, transparent 60%),
+      radial-gradient(140% 120% at 100% 100%,var(--c4) 0%, transparent 60%);
+    background-size: 200% 200%;
+    background-position: 0% 100%, 100% 0%, 0% 0%, 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  
+    animation: auroraShift var(--aurora-speed) ease-in-out infinite alternate;
+    will-change: background-position;
+  }
+  
+  /* Pause aurora until it's shown */
+  .intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
+  .intro-line.big.show .aurora-text { animation-play-state: running; }
+  
+  @keyframes auroraShift{
+    0%   { background-position:   0% 100%, 100% 0%,   0%   0%, 100% 100%; }
+    50%  { background-position:  50%  50%,  50% 50%, 50%  50%,  50%  50%; }
+    100% { background-position: 100%   0%,   0% 100%, 100% 100%,  0%   0%; }
+  }
   
   /* Optional: if user has Reduce Motion, just show instantly */
   @media (prefers-reduced-motion: reduce) {
