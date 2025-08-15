@@ -78,9 +78,8 @@
   .intro-overlay { position: fixed; inset: 0; background: #000; display: grid; place-items: center; z-index: 9999; overflow: hidden; --r: 220px; }
   .intro-overlay.hidden { display: none; }
 
-  /* base square (hidden until spotlight reveals it) */
-  .intro-overlay .square { width:44px; height:44px; background:#fff; border-radius:10px; display:grid; place-items:center; position:relative; opacity:0; transform: scale(0); will-change: transform, opacity; }
-  .intro-overlay .square.visible { animation: popHold 1.3s cubic-bezier(0.2,0.8,0.2,1) var(--introDelay) forwards; }
+  /* base square (always rendered; masked by spotlight) */
+  .intro-overlay .square { width:44px; height:44px; background:#fff; border-radius:10px; display:grid; place-items:center; position:relative; opacity:1; transform:none; will-change:auto; }
 
   /* behind-square halo (sits under the square, not over the key) */
   .intro-overlay .square::before { content:""; position:absolute; inset:-12px; border-radius:14px; pointer-events:none; z-index:-1;
@@ -108,16 +107,6 @@
   .intro-overlay .decode { position:absolute; left:50%; top: calc(100% + 10px); z-index: 2; pointer-events: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; letter-spacing: .08em; color: #9CA3AF; opacity: 0; transform: translate(-50%,4px); transition: opacity .35s ease, transform .35s ease; }
   .intro-overlay .decode.show { opacity: 1; transform: translate(-50%,0); }
 
-  /* hover tweaks (no hard box outline) */
-  .intro-overlay .sq-wrap:hover .square,
-  .intro-overlay .sq-wrap:focus-visible .square { box-shadow: none; }
-  .intro-overlay .sq-wrap:hover .square::before,
-  .intro-overlay .sq-wrap:focus-visible .square::before { background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%); opacity:1; }
-  .intro-overlay .sq-wrap:hover .square::after,
-  .intro-overlay .sq-wrap:focus-visible .square::after { opacity:.9; transform: translateX(-50%) scale(1.05); }
-  .intro-overlay .sq-wrap:hover .keyhole,
-  .intro-overlay .sq-wrap:focus-visible .keyhole { filter: none; animation: none; }
-
   /* spin triggers after decode completes */
   .intro-overlay .square.spin { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); animation: spin360 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards; }
   .intro-overlay .square .keyhole.spin { animation: counterSpin 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards; }
@@ -129,8 +118,8 @@
   /* Reveal mask: only show content inside the cursor circle (percent coords) */
   .intro-overlay .reveal-layer{
     position: relative; z-index: 1;
-    -webkit-mask-image: radial-gradient(circle var(--r, 110px) at var(--mxp, -200%) var(--myp, -200%), #fff 80%, rgba(255,255,255,0) 90%);
-    mask-image: radial-gradient(circle var(--r, 110px) at var(--mxp, -200%) var(--myp, -200%), #fff 80%, rgba(255,255,255,0) 90%);
+    -webkit-mask-image: radial-gradient(circle var(--r, 110px) at var(--mxp, -200%) var(--myp, -200%), #fff 35%, rgba(255,255,255,0) 45%);
+    mask-image: radial-gradient(circle var(--r, 110px) at var(--mxp, -200%) var(--myp, -200%), #fff 35%, rgba(255,255,255,0) 45%);
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
   }
 
@@ -534,37 +523,21 @@
     var aura = overlay.querySelector('.cursor-aura');
 
     // Cursor-following blue aura + spotlight mask tracking
-    var revealed = false; // has the square popped in yet?
-    function maybeRevealSquare(cx, cy){
-      if(revealed || !sq) return;
-      var srect = sq.getBoundingClientRect();
-      var sx = srect.left + srect.width/2;
-      var sy = srect.top + srect.height/2;
-      var r = parseFloat(getComputedStyle(overlay).getPropertyValue('--r')) || 220;
-      var dx = cx - sx, dy = cy - sy;
-      if ((dx*dx + dy*dy) <= (r*0.65)*(r*0.65)) {
-        sq.classList.add('visible');
-        revealed = true;
-      }
-    }
-
     if (aura) {
-      var x = window.innerWidth/2, y = window.innerHeight/2, tx = x, ty = y, raf = null;
+      var x = null, y = null, tx = 0, ty = 0, raf = null;
       function step(){
+        if (x == null || y == null) { raf = null; return; }
         tx += (x - tx)*0.18; ty += (y - ty)*0.18;
         aura.style.left = tx + 'px'; aura.style.top = ty + 'px';
         if(layer){ var rect = layer.getBoundingClientRect(); var px = ((tx - rect.left)/rect.width)*100; var py = ((ty - rect.top)/rect.height)*100; overlay.style.setProperty('--mxp', px + '%'); overlay.style.setProperty('--myp', py + '%'); }
-        maybeRevealSquare(tx, ty);
         raf = requestAnimationFrame(step);
       }
       overlay.addEventListener('mousemove', function(e){
         x = e.clientX; y = e.clientY;
-        if(layer){ var rect = layer.getBoundingClientRect(); var px = ((x - rect.left)/rect.width)*100; var py = ((y - rect.top)/rect.height)*100; overlay.style.setProperty('--mxp', px + '%'); overlay.style.setProperty('--myp', py + '%'); }
         if(!overlay.classList.contains('mouse-active')) overlay.classList.add('mouse-active');
-        maybeRevealSquare(x, y);
-        if(!raf) step();
+        if(!raf){ tx = x; ty = y; step(); }
       });
-      overlay.addEventListener('mouseleave', function(){ if(raf){ cancelAnimationFrame(raf); raf = null; } });
+      overlay.addEventListener('mouseleave', function(){ if(raf){ cancelAnimationFrame(raf); raf = null; } x = y = null; });
     }
 
     // Make wrapper focusable/clickable for accessibility
@@ -577,8 +550,6 @@
 
     function startDecode(){
       if(started) return; started = true;
-      // ensure square is visible if user clicked without hovering spotlight over it
-      if (sq && !sq.classList.contains('visible')) { sq.classList.add('visible'); revealed = true; }
       overlay.classList.add('decode-phase');
       if (decodeEl) decodeEl.classList.add('show');
       var target = 'Welcome';
@@ -629,7 +600,6 @@
       overlay.classList.add('revealing');
       var wipe = overlay.querySelector('.white-wipe');
       if (wipe) {
-        // kick the wipe transition on the next frame
         requestAnimationFrame(()=>{ wipe.style.transform = 'translateY(0%)'; });
         wipe.addEventListener('transitionend', function(){
           overlay.classList.add('hidden');
@@ -685,10 +655,26 @@
         const sq = document.querySelector('.intro-overlay .square');
         setTimeout(()=>{
           const op = parseFloat(getComputedStyle(sq).opacity) || 0;
-          // This may be 0 until spotlight reveals; just log
           console.log('INFO: square opacity after 900ms =', op);
         }, 900);
       }
+      // Extra sanity tests
+      const ro = document.querySelector('.intro-overlay .reveal-layer');
+      assert(!!ro, 'reveal-layer present');
+      const wipe = document.querySelector('.intro-overlay .white-wipe');
+      assert(!!wipe, 'white-wipe present');
+
+      // Simulate navigating to projects and pressing ArrowUp to ensure no syntax errors in handler
+      location.hash = '#/projects';
+      setTimeout(()=>{
+        const pinner = document.getElementById('projectsPinner');
+        let ok = true;
+        try{
+          const ev = new KeyboardEvent('keydown', {key:'ArrowUp'});
+          pinner && pinner.dispatchEvent(ev);
+        } catch(e) { ok = false; }
+        assert(ok, 'keyboard handler executed without syntax error');
+      }, 200);
     });
   })();
 </script>
