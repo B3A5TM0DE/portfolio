@@ -228,6 +228,29 @@ footer { display: none; }
     transition: transform .7s cubic-bezier(0.16,1,0.3,1);
     transform: translateY(0%);
   }
+
+  /* make sure the key wrapper is the centered grid item */
+.intro-overlay { display: grid; place-items: center; }
+.intro-overlay .sq-wrap { grid-area: 1 / 1; }
+
+/* when JS adds .lift, run an animation so the 'animationstart' listener fires */
+.intro-overlay .sq-wrap.lift {
+    animation: exitUp .7s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  
+  /* OPTION A: keep the original move-up behavior
+  @keyframes exitUp {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-120vh); }
+  }
+  */
+  
+  /* OPTION B (recommended): don't move, just fade the key out but keep the same name
+     — this still triggers your JS and avoids the jump you noticed */
+  @keyframes exitUp {
+    from { transform: translateY(0); opacity: 1; }
+    to   { transform: translateY(0); opacity: 0; }
+  }
   
   /* keyframes */
   @keyframes spin360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
