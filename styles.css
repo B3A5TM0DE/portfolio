@@ -234,14 +234,18 @@ footer { display: none; }
   
   /* Aurora animated gradient on the name text */
   .aurora-text{
-    /* palette (tweak as you like; these never hit pure white) */
+    /* Wide palette (no white) */
     --c1: #22d3ee; /* cyan */
-    --c2: #2563eb; /* blue */
-    --c3: #8b5cf6; /* violet */
-    --c4: #10b981; /* green */
+    --c2: #10b981; /* green */
+    --c3: #f59e0b; /* amber */
+    --c4: #ef4444; /* red */
+    --c5: #a855f7; /* violet */
+    --c6: #3b82f6; /* blue */
+  
+    /* Base layer so text never goes white */
     --base1: #22d3ee;
-    --base2: #2563eb;
-    --base3: #8b5cf6;
+    --base2: #a855f7;
+    --base3: #ef4444;
     --aurora-speed: 10s; /* faster than before */
   
     /* TOP → BOTTOM (last = base) */
