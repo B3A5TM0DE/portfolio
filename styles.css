@@ -234,19 +234,27 @@ footer { display: none; }
   
   /* Aurora animated gradient on the name text */
   .aurora-text{
+    /* palette (tweak as you like; these never hit pure white) */
     --c1: #22d3ee; /* cyan */
     --c2: #2563eb; /* blue */
     --c3: #8b5cf6; /* violet */
     --c4: #10b981; /* green */
-    --aurora-speed: 18s; /* slower waves -> larger number */
+    --base1: #22d3ee;
+    --base2: #2563eb;
+    --base3: #8b5cf6;
+    --aurora-speed: 10s; /* faster than before */
   
+    /* TOP → BOTTOM (last = base) */
     background:
-      radial-gradient(120% 140% at 20% 120%, var(--c1) 0%, transparent 60%),
-      radial-gradient(120% 140% at 80% -20%, var(--c2) 0%, transparent 60%),
-      radial-gradient(140% 120% at 0% 0%,    var(--c3) 0%, transparent 60%),
-      radial-gradient(140% 120% at 100% 100%,var(--c4) 0%, transparent 60%);
+      radial-gradient(120% 140% at 20% 120%, var(--c1) 0%, rgba(34,211,238,0) 60%),
+      radial-gradient(120% 140% at 80% -20%, var(--c2) 0%, rgba(37,99,235,0) 60%),
+      radial-gradient(140% 120% at 0% 0%,    var(--c3) 0%, rgba(139,92,246,0) 60%),
+      radial-gradient(140% 120% at 100% 100%,var(--c4) 0%, rgba(16,185,129,0) 60%),
+      /* Base layer so no white ever shows through */
+      linear-gradient(90deg, var(--base1), var(--base2), var(--base3));
     background-size: 200% 200%;
-    background-position: 0% 100%, 100% 0%, 0% 0%, 100% 100%;
+    background-position: 0% 100%, 100% 0%, 0% 0%, 100% 100%, 0% 50%;
+  
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -255,15 +263,15 @@ footer { display: none; }
     will-change: background-position;
   }
   
-  /* Pause aurora until it's shown */
+  /* Pause animation until shown, then run (keeps CPU calm before reveal) */
   .intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
   .intro-line.big.show .aurora-text { animation-play-state: running; }
   
   @keyframes auroraShift{
-    0%   { background-position:   0% 100%, 100% 0%,   0%   0%, 100% 100%; }
-    50%  { background-position:  50%  50%,  50% 50%, 50%  50%,  50%  50%; }
-    100% { background-position: 100%   0%,   0% 100%, 100% 100%,  0%   0%; }
-  }
+    0%   { background-position:   0% 100%, 100% 0%,   0%   0%, 100% 100%,   0% 50%; }
+    50%  { background-position:  50%  50%,  50% 50%, 50%  50%,  50%  50%,  50% 50%; }
+    100% { background-position: 100%   0%,   0% 100%, 100% 100%,  0%   0%, 100% 50%; }
+  }  
   
   /* Optional: if user has Reduce Motion, just show instantly */
   @media (prefers-reduced-motion: reduce) {
