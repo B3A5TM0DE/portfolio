@@ -160,28 +160,20 @@
     }
 
     function startTyping(){
-      // small line first, then big line
       typeTo(hiEl, HI, 0, () => setTimeout(() => typeTo(nameEl, NAME), 300));
     }
 
     let started = false;
     function kick(){
       if (started) return;
-      // don’t run on the projects route
+      // don't run on projects route
       if ((location.hash || '#/home') === '#/projects') return;
       started = true;
       startTyping();
     }
 
-    // Start right when the overlay reveals the page
+    // Start ONLY after the overlay reveals
     window.addEventListener('hero-revealed', kick, { once: true });
-
-    // Fallback (e.g., overlay skipped)
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(kick, 50));
-    } else {
-      setTimeout(kick, 50);
-    }
   })();
 
   // === Helpers ===
