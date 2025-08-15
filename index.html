@@ -116,8 +116,7 @@
   .intro-overlay.mouse-active .cursor-aura{ opacity:.9; }
 
   /* Reveal mask: only show content inside the cursor circle (percent coords) */
-  .intro-overlay .reveal-layer{
-    position: relative; z-index: 1;
+  .intro-overlay .reveal-layer{ position: absolute; inset: 0; z-index: 1; display: grid; place-items: center;
     -webkit-mask-image: radial-gradient(circle var(--r, 110px) at var(--mxp, -200%) var(--myp, -200%), #fff 35%, rgba(255,255,255,0) 45%);
     mask-image: radial-gradient(circle var(--r, 110px) at var(--mxp, -200%) var(--myp, -200%), #fff 35%, rgba(255,255,255,0) 45%);
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
@@ -127,6 +126,17 @@
   .intro-overlay.decode-phase { --r: 260px; }
   .intro-overlay.decode-phase .reveal-layer{ -webkit-mask-image: none; mask-image: none; }
   .intro-overlay.decode-phase .decode{ color:#E5E7EB; }
+  /* Top-center decode message */
+  .intro-overlay .top-decode{ position:absolute; top:12%; left:50%; transform: translateX(-50%) translateY(-2px); z-index:2; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; letter-spacing:.10em; color:#BFE7F2; opacity:0; transition: opacity .35s ease, transform .35s ease; pointer-events:none; }
+  .intro-overlay .top-decode.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+  /* Hint prompt (masked, top-right) */
+  .intro-overlay .hint{ display:inline-flex; align-items:center; gap:8px; pointer-events:none; color:#C9EEFA; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; letter-spacing:.10em; opacity:.85; filter: drop-shadow(0 0 6px rgba(34,211,238,.35)); z-index:3; position:absolute; }
+  .intro-overlay .hint.h-top-right{ top:14%; right:10%; }
+  .intro-overlay .hint.h-left{ top:30%; left:12%; }
+  .intro-overlay .hint.h-bottom{ bottom:12%; left:50%; transform: translateX(-50%); }
+  .intro-overlay .hint-text{ white-space:nowrap; }
+  .intro-overlay .hint-arrow{ display:inline-block; font-size:14px; line-height:1; }
+  .intro-overlay .hint.found{ opacity:1; filter: drop-shadow(0 0 8px rgba(34,211,238,.55)); z-index:4; }
 
   @keyframes popHold {
     0%   { transform: scale(0) rotate(0deg) translateY(0); opacity: 0; }
@@ -512,7 +522,18 @@
 
     var overlay = document.createElement('div');
     overlay.className = 'intro-overlay';
-    overlay.innerHTML = '<div class="cursor-aura" aria-hidden="true"></div><div class="reveal-layer"><div class="sq-wrap"><div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div><div class="decode" aria-live="polite" aria-label="Welcome"></div></div></div><div class="white-wipe" aria-hidden="true"></div>';
+    overlay.innerHTML = '<div class="cursor-aura" aria-hidden="true"></div>' +
+                        '<div class="top-decode" aria-hidden="true"></div>' +
+                        ' <div class="reveal-layer">' +
+                          '<div class="hint h-top-right"><span class="hint-text"></span><span class="hint-arrow" aria-hidden="true">↙</span></div>' +
+                          '<div class="hint h-left"><span class="hint-text"></span><span class="hint-arrow" aria-hidden="true">↘</span></div>' +
+                          '<div class="hint h-bottom"><span class="hint-text"></span><span class="hint-arrow" aria-hidden="true">↑</span></div>' +
+                          '<div class="sq-wrap">' +
+                            '<div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div>' +
+                            '<div class="decode" aria-live="polite" aria-label="Welcome"></div>' +
+                          '</div>' +
+                        '</div>' +
+                        '<div class="white-wipe" aria-hidden="true"></div>';
     document.body.appendChild(overlay);
 
     var decodeEl = overlay.querySelector('.decode');
@@ -521,6 +542,70 @@
     var wr = overlay.querySelector('.sq-wrap');
     var layer = overlay.querySelector('.reveal-layer');
     var aura = overlay.querySelector('.cursor-aura');
+    var topD = overlay.querySelector('.top-decode');
+    var hints = Array.from(overlay.querySelectorAll('.hint')).map(function(el){ return { el: el, text: el.querySelector('.hint-text'), started: false }; });
+
+    // Top-center decode message (persistent "find the lock")
+    var topTimers = [];
+    function clearTopTimers(){ topTimers.forEach(function(id){ clearTimeout(id); }); topTimers = []; }
+    function startTopDecodeLoop(){
+      if(!topD) return;
+      var target = 'find the lock';
+      var charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*?';
+      function cycle(){
+        topD.classList.add('show');
+        var duration = 900, interval = 40, steps = Math.max(1, Math.floor(duration/interval));
+        var frame = 0, reveal = 0;
+        function step(){
+          frame++;
+          var pct = frame / steps;
+          var revealCount = Math.min(target.length, Math.floor(pct * target.length));
+          if (revealCount > reveal) reveal = revealCount;
+          var out = '';
+          for (var i=0;i<target.length;i++){ out += (i<reveal) ? target[i] : charset[(Math.random()*charset.length)|0]; }
+          topD.textContent = out;
+          if (frame < steps) { topTimers.push(setTimeout(step, interval)); }
+          else { topD.textContent = target; /* persist: do not remove .show */ }
+        }
+        step();
+      }
+      cycle();
+    }
+    startTopDecodeLoop();
+
+    // One-time hint decode (masked): triggers when cursor spotlight nears hint
+    function startHintDecodeFor(h){
+      if(h.started || !h.text) return;
+      h.started = true;
+      var target = 'this way';
+      var charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*?';
+      var duration = 900, interval = 40, steps = Math.max(1, Math.floor(duration/interval));
+      var frame = 0, reveal = 0;
+      (function step(){
+        frame++;
+        var pct = frame / steps;
+        var revealCount = Math.min(target.length, Math.floor(pct * target.length));
+        if (revealCount > reveal) reveal = revealCount;
+        var out = '';
+        for (var i=0;i<target.length;i++){ out += (i<reveal) ? target[i] : charset[(Math.random()*charset.length)|0]; }
+        h.text.textContent = out;
+        if (frame < steps) setTimeout(step, interval);
+        else { h.text.textContent = target; persistHint(h); }
+      })();
+    }
+
+    function persistHint(h){
+      if(h.persistent) return; h.persistent = true;
+      try{
+        var clone = h.el.cloneNode(true);
+        clone.classList.add('found');
+        var t = clone.querySelector('.hint-text');
+        if (t && h.text) t.textContent = h.text.textContent || 'this way';
+        overlay.appendChild(clone);
+        // hide masked original
+        h.el.style.display = 'none';
+      } catch(e) { /* no-op */ }
+    }
 
     // Cursor-following blue aura + spotlight mask tracking
     if (aura) {
@@ -530,6 +615,19 @@
         tx += (x - tx)*0.18; ty += (y - ty)*0.18;
         aura.style.left = tx + 'px'; aura.style.top = ty + 'px';
         if(layer){ var rect = layer.getBoundingClientRect(); var px = ((tx - rect.left)/rect.width)*100; var py = ((ty - rect.top)/rect.height)*100; overlay.style.setProperty('--mxp', px + '%'); overlay.style.setProperty('--myp', py + '%'); }
+        // Trigger per-hint decode when spotlight center is close
+        if(hints && hints.length){
+          var R = parseFloat(getComputedStyle(overlay).getPropertyValue('--r')) || 220;
+          for(var i=0;i<hints.length;i++){
+            var h = hints[i];
+            if(h.started) continue;
+            var hr = h.el.getBoundingClientRect();
+            var hx = hr.left + hr.width/2, hy = hr.top + hr.height/2;
+            var dx = tx - hx, dy = ty - hy;
+            var dist = Math.hypot(dx, dy);
+            if (dist <= R*0.33) { startHintDecodeFor(h); }
+          }
+        }
         raf = requestAnimationFrame(step);
       }
       overlay.addEventListener('mousemove', function(e){
@@ -602,10 +700,12 @@
       if (wipe) {
         requestAnimationFrame(()=>{ wipe.style.transform = 'translateY(0%)'; });
         wipe.addEventListener('transitionend', function(){
+          clearTopTimers();
           overlay.classList.add('hidden');
           if (introText) introText.classList.add('show');
         }, { once: true });
       } else {
+        clearTopTimers();
         overlay.classList.add('hidden');
         if (introText) introText.classList.add('show');
       }
@@ -619,63 +719,6 @@
     } else {
       revealPage();
     }
-  })();
-
-  // ===== Self-tests (optional): add ?selftest=1 or #/selftest to run =====
-  (function(){
-    const run = location.search.includes('selftest=1') || location.hash.includes('/selftest');
-    if(!run) return;
-    function assert(cond, msg){ (cond ? console.log : console.error)((cond?'PASS':'FAIL')+': '+msg); }
-    function hasKeyframes(name){
-      for(const ss of Array.from(document.styleSheets)){
-        try{
-          const rules = ss.cssRules || [];
-          for(const r of Array.from(rules)){
-            if(r.type === CSSRule.KEYFRAMES_RULE && r.name === name) return true;
-          }
-        }catch(e){ /* ignore cross-origin */ }
-      }
-      return false;
-    }
-    document.addEventListener('DOMContentLoaded', function(){
-      assert(!!document.querySelector('nav a[data-route="home"]'), 'nav home link exists');
-      assert(!!document.querySelector('nav a[data-route="projects"]'), 'nav projects link exists');
-      assert(!document.querySelector('nav a[data-route="about"]'), 'nav about link removed');
-      assert(!document.querySelector('nav a[data-route="contact"]'), 'nav contact link removed');
-      assert(!document.getElementById('about'), '#about section removed');
-      assert(!document.getElementById('contact'), '#contact section removed');
-      assert(hasKeyframes('popHold'), '@keyframes popHold exists');
-      assert(hasKeyframes('spin360'), '@keyframes spin360 exists');
-      assert(hasKeyframes('counterSpin'), '@keyframes counterSpin exists');
-      assert(hasKeyframes('exitUp'), '@keyframes exitUp exists');
-      assert(document.querySelectorAll('nav a').length === 2, 'nav has exactly 2 items');
-      assert(!!document.querySelector('.intro-overlay') || location.hash === '#/projects', 'intro overlay exists on home route');
-      const overlayNode = document.querySelector('.intro-overlay');
-      if (overlayNode) {
-        const sq = document.querySelector('.intro-overlay .square');
-        setTimeout(()=>{
-          const op = parseFloat(getComputedStyle(sq).opacity) || 0;
-          console.log('INFO: square opacity after 900ms =', op);
-        }, 900);
-      }
-      // Extra sanity tests
-      const ro = document.querySelector('.intro-overlay .reveal-layer');
-      assert(!!ro, 'reveal-layer present');
-      const wipe = document.querySelector('.intro-overlay .white-wipe');
-      assert(!!wipe, 'white-wipe present');
-
-      // Simulate navigating to projects and pressing ArrowUp to ensure no syntax errors in handler
-      location.hash = '#/projects';
-      setTimeout(()=>{
-        const pinner = document.getElementById('projectsPinner');
-        let ok = true;
-        try{
-          const ev = new KeyboardEvent('keydown', {key:'ArrowUp'});
-          pinner && pinner.dispatchEvent(ev);
-        } catch(e) { ok = false; }
-        assert(ok, 'keyboard handler executed without syntax error');
-      }, 200);
-    });
   })();
 </script>
 </body>
