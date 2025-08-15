@@ -216,73 +216,78 @@ footer { display: none; }
   /* Make sure no big caret ever shows (in case it's still in DOM) */
   .intro-line.big .caret { display: none !important; }
   /* Reserve space so the small line doesn't jump */
-.intro-line.big { 
+  .intro-line.big { 
     min-height: 1em;
   }
   
   /* speed knobs */
-/* knobs */
+/* Black hero so colors pop */
+#intro { background: #0b0b0f; }
+.intro-line.small { color: #9ca3af; } /* legible on black */
+
+/* Keep layout from jumping */
+.intro-line.big { min-height: 1em; }
+
+/* Fade-in for the name (your JS adds .show to #bigLine) */
+:root { --name-fade-dur: 1.2s; }
+#nameLine {
+  display:inline-block;
+  opacity:0;
+  transform:translateY(6px);
+  transition:
+    opacity var(--name-fade-dur) cubic-bezier(.2,.7,0,1),
+    transform var(--name-fade-dur) cubic-bezier(.2,.7,0,1);
+}
+.intro-line.big.show #nameLine { opacity:1; transform:none; }
+
+/* === Aurora text (linear layers + hue cycle) ===
+   - No conic/radial -> no bright center point
+   - No transparent-to-white -> never flashes white
+   - Hue rotation + drifting background for color variety
+*/
 :root{
-    --aurora-speed: 8s;       /* smaller = faster */
-    --name-fade-dur: 1.2s;    /* fade-in time you already use */
-    --aurora-intensity: 0.38; /* lower = softer color, raise to 0.5 if you want more pop */
-  }
-  
-  /* fade-in (unchanged) */
-  #nameLine{
-    display:inline-block;
-    opacity:0;
-    transform:translateY(6px);
-    transition:
-      opacity var(--name-fade-dur) cubic-bezier(.2,.7,0,1),
-      transform var(--name-fade-dur) cubic-bezier(.2,.7,0,1);
-  }
-  .intro-line.big.show #nameLine{ opacity:1; transform:none; }
-  
-  /* Aurora text — no focal point, no white */
-  .aurora-text{
-    /* your palette from the reference */
-    --c1: 0,194,255;  /* #00c2ff */
-    --c2: 51,255,140; /* #33ff8c */
-    --c3: 255,198,64; /* #ffc640 */
-    --c4: 229,76,255; /* #e54cff */
-  
-    /* base gradient so transparent areas never reveal page white */
-    --base1: #0ea5b7; /* deeper cyan */
-    --base2: #7c3aed; /* violet */
-  
-    /* three large DIAGONAL layers + one base layer */
-    background:
-      linear-gradient(120deg, rgba(var(--c1), var(--aurora-intensity)) 0%,  rgba(var(--c2), var(--aurora-intensity)) 100%),
-      linear-gradient(300deg, rgba(var(--c3), var(--aurora-intensity)) 0%,  rgba(var(--c4), var(--aurora-intensity)) 100%),
-      linear-gradient( 30deg, rgba(var(--c2), calc(var(--aurora-intensity) * .8)) 0%, rgba(var(--c1), calc(var(--aurora-intensity) * .8)) 100%),
-      linear-gradient(90deg, var(--base1), var(--base2)); /* base: always colored */
-  
-    /* oversized, so motion is smooth and there’s no center glare */
-    background-size: 220% 220%, 240% 240%, 200% 200%, 100% 100%;
-    background-position: 0% 50%, 100% 50%, 50% 0%, 50% 50%;
-  
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  
-    /* drift the layers — the last position stays constant (base layer) */
-    animation: auroraSlide var(--aurora-speed) ease-in-out infinite alternate;
-    filter: saturate(1.05) brightness(.95);
-  }
-  
-  /* only animate when revealed */
-  .intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
-  .intro-line.big.show       .aurora-text { animation-play-state: running; }
-  
-  /* avoid vertical jump when name appears */
-  .intro-line.big { min-height: 1em; }
-  
-  @keyframes auroraSlide{
-    0%   { background-position: 0% 50%,   100% 50%, 50%   0%, 50% 50%; }
-    50%  { background-position: 60% 40%,   0%  60%, 60% 100%, 50% 50%; }
-    100% { background-position:100% 100%, 40%   0%,  0%  50%, 50% 50%; }
-  }  
+  --aurora-speed: 7s;         /* smaller = faster color change */
+  --aurora-intensity: 0.42;   /* 0.3 = softer, 0.5 = punchier */
+}
+.aurora-text{
+  /* balanced palette (starts warm so it doesn't read "blue") */
+  background:
+    linear-gradient(120deg, #ff4d67, #ffd166, #06d6a0, #118ab2, #a855f7),
+    linear-gradient(300deg, rgba(255,198,64,var(--aurora-intensity)),
+                             rgba(229,76,255,var(--aurora-intensity))),
+    linear-gradient( 30deg, rgba(51,255,140,var(--aurora-intensity)),
+                             rgba(0,194,255,var(--aurora-intensity)));
+  background-size: 300% 300%, 220% 220%, 220% 220%;
+  background-position: 0% 50%, 100% 50%, 50% 0%;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* drift + rainbow cycle (no white introduced) */
+  animation:
+    auroraMove var(--aurora-speed) ease-in-out infinite alternate,
+    hueCycle  calc(var(--aurora-speed) * 1.5) linear infinite;
+
+  /* keep it rich on black without washing out */
+  filter: saturate(1.2) contrast(1.05) brightness(.95)
+          hue-rotate(var(--hue,0deg));
+}
+
+/* Only animate once revealed */
+.intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
+.intro-line.big.show .aurora-text { animation-play-state: running; }
+
+@keyframes auroraMove {
+  0%   { background-position:   0% 50%, 100% 50%, 50%   0%; }
+  50%  { background-position:  60% 40%,   0% 60%,  60% 100%; }
+  100% { background-position: 100% 50%,  40%  0%,   0%  50%; }
+}
+
+/* animate a custom hue variable (affects the element via filter) */
+@property --hue { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes hueCycle { to { --hue: 360deg; } }
+
   
   /* Optional: if user has Reduce Motion, just show instantly */
   @media (prefers-reduced-motion: reduce) {
