@@ -112,130 +112,71 @@ footer { display: none; }
 @media (max-width: 900px) { .centered-container { width: 92%; flex-direction: column; text-align: center; gap: 24px; } #intro h1 { white-space: normal; } }
 @media (max-width: 600px) { #subtitle { font-size: 1rem; } .slide { padding: 12px; } }
 
-/* ===== Key-only Intro Overlay (no spotlight / no hints) ===== */
-/* Center the key and stack ALL overlay children on top of each other */
-.intro-overlay {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    display: grid;
-    place-items: center;   /* centers items inside their grid area */
-    z-index: 9999;
-    overflow: hidden;
+/* ===== Key-only Intro Overlay (centered, no jump) ===== */
+.intro-overlay{
+    position:fixed; inset:0; background:#000;
+    display:grid; place-items:center; z-index:9999; overflow:hidden;
+  }
+  .intro-overlay > *{ grid-area:1 / 1; }
+  
+  /* key wrapper */
+  .intro-overlay .sq-wrap{
+    display:grid; place-items:center; cursor:pointer; outline:none;
+    z-index:2; transform:translateY(0);
+  }
+  .intro-overlay .sq-wrap:focus-visible{ outline:2px solid #fff; outline-offset:4px; }
+  
+  /* keep it from *ever* moving vertically */
+  .intro-overlay .sq-wrap,
+  .intro-overlay .sq-wrap.lift{ transform:translateY(0) !important; }
+  
+  /* square + keyhole */
+  .intro-overlay .square{
+    width:44px; height:44px; background:#fff; border-radius:10px;
+    display:grid; place-items:center; position:relative;
+  }
+  .intro-overlay .square::before{
+    content:""; position:absolute; inset:-12px; border-radius:14px; z-index:-1;
+    background:radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
+    filter:blur(6px);
+  }
+  .intro-overlay .square::after{
+    content:""; position:absolute; left:50%; bottom:-8px; width:66px; height:16px;
+    transform:translateX(-50%); filter:blur(0.6px);
+    background:radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.45) 0%, rgba(34,211,238,0) 60%);
+    opacity:.6;
+  }
+  .intro-overlay .square .keyhole{
+    position:relative; width:18px; height:28px; display:block; transform-origin:50% 50%;
+  }
+  .intro-overlay .square .keyhole::before{
+    content:""; position:absolute; left:50%; top:0; width:14px; height:14px; background:#000; border-radius:50%; transform:translateX(-50%);
+  }
+  .intro-overlay .square .keyhole::after{
+    content:""; position:absolute; left:50%; top:14px; width:8px; height:12px; background:#000; transform:translateX(-50%); border-radius:2px;
   }
   
-  /* Put every direct child in the SAME grid cell (1 / 1), so they overlap */
-  .intro-overlay > * {
-    grid-area: 1 / 1;
+  /* spin only the square/key */
+  .intro-overlay .square.spin{ animation:spin360 .9s cubic-bezier(.2,.8,.2,1) forwards; }
+  .intro-overlay .square .keyhole.spin{ animation:counterSpin .9s cubic-bezier(.2,.8,.2,1) forwards; }
+  
+  /* fade-only lift (no movement) */
+  .intro-overlay .sq-wrap.lift{ animation:exitUp .7s cubic-bezier(.16,1,.3,1) forwards; }
+  @keyframes exitUp{ from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(0);} }
+  
+  /* wipe reveal */
+  .intro-overlay .white-wipe{
+    position:absolute; inset:0; background:#fff; transform:translateY(100%); z-index:3;
+  }
+  .intro-overlay.revealing .white-wipe{
+    transition:transform .7s cubic-bezier(.16,1,.3,1);
+    transform:translateY(0%);
   }
   
-  /* The key wrapper is centered by the grid; make the wipe stretch full-screen */
-  .intro-overlay .sq-wrap { justify-self: center; align-self: center; }
+  /* spins */
+  @keyframes spin360{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  @keyframes counterSpin{ from{transform:rotate(0deg);} to{transform:rotate(-360deg);} }
   
-  
-  /* click target wrapper */
-  .intro-overlay .sq-wrap {
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
-    outline: none;
-  }
-  .intro-overlay .sq-wrap:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
-  
-  /* the key “square” */
-  .intro-overlay .square {
-    width: 44px;
-    height: 44px;
-    background: #fff;
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    position: relative;
-    opacity: 1;
-    transform: none;
-  }
-  
-  /* subtle halo + base shadow (kept — optional) */
-  .intro-overlay .square::before {
-    content: "";
-    position: absolute;
-    inset: -12px;
-    border-radius: 14px;
-    pointer-events: none;
-    z-index: -1;
-    background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
-    filter: blur(6px);
-    opacity: 1;
-    transition: background .25s ease, opacity .25s ease;
-  }
-  .intro-overlay .square::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -8px;
-    width: 66px;
-    height: 16px;
-    transform: translateX(-50%);
-    pointer-events: none;
-    filter: blur(0.6px);
-    background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.45) 0%, rgba(34,211,238,0) 60%);
-    opacity: .6;
-    transition: opacity .2s ease, transform .2s ease, background .25s ease;
-  }
-  
-  /* keyhole glyph */
-  .intro-overlay .square .keyhole {
-    position: relative;
-    display: block;
-    width: 18px;
-    height: 28px;
-    transform-origin: 50% 50%;
-  }
-  .intro-overlay .square .keyhole::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 14px;
-    height: 14px;
-    background: #000;
-    border-radius: 50%;
-    transform: translateX(-50%);
-  }
-  .intro-overlay .square .keyhole::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 14px;
-    width: 8px;
-    height: 12px;
-    background: #000;
-    transform: translateX(-50%);
-    border-radius: 2px;
-  }
-  
-  /* spin animation hook (your JS adds .spin) */
-  .intro-overlay .square.spin {
-    animation: spin360 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards;
-  }
-  .intro-overlay .square .keyhole.spin {
-    animation: counterSpin 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards;
-  }
-  
-  /* white wipe reveal (kept so your existing JS still works) */
-  .intro-overlay .white-wipe {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 100%;
-    background: #fff;
-    transform: translateY(100%);
-  }
-  .intro-overlay.revealing .white-wipe {
-    transition: transform .7s cubic-bezier(0.16,1,0.3,1);
-    transform: translateY(0%);
-  }
 
   /* make sure the key wrapper is the centered grid item */
 .intro-overlay { display: grid; place-items: center; }
@@ -320,8 +261,4 @@ footer { display: none; }
     from { transform: translateY(0); opacity: 1; }
     to   { transform: translateY(0); opacity: 0; }
   }
-  
-  /* keyframes */
-  @keyframes spin360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  @keyframes counterSpin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
   
