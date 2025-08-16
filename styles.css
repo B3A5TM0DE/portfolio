@@ -239,6 +239,43 @@ footer { display: none; }
   .intro-line.big:not(.show) .aurora-text { animation-play-state: paused; }
   .intro-line.big.show .aurora-text       { animation-play-state: running; }
   
+  /* Decovar font */
+@font-face {
+    font-family: "Decovar Draw";
+    src: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/DecovarDRAW-VF.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  /* Only the variable font + DRAW axis here.
+     Do NOT set background here so aurora-text keeps control of the gradient/animation. */
+  .draw-text {
+    font-family: "Decovar Draw", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-weight: 400;
+    font-variation-settings: "RSEC" 60, "DRAW" 1000; /* start undrawn */
+    will-change: font-variation-settings;
+    -webkit-text-fill-color: transparent; /* aurora-text clips the bg */
+  }
+  
+  /* Run the draw once when the big line is revealed */
+  .intro-line.big.show #nameLine.draw-text {
+    animation: drawName 2.8s cubic-bezier(.2,.7,0,1) 300ms 1 forwards; /* delay matches your 300ms JS */
+  }
+  
+  @keyframes drawName {
+    from { font-variation-settings: "RSEC" 60, "DRAW" 1000; }
+    to   { font-variation-settings: "RSEC" 60, "DRAW" 0; }
+  }
+  
+  /* Reduced motion: skip animation but keep final look */
+  @media (prefers-reduced-motion: reduce) {
+    .draw-text {
+      animation: none !important;
+      font-variation-settings: "RSEC" 60, "DRAW" 0 !important;
+    }
+  }
+  
   /* smooth fade for the name (keep if not already present) */
   :root { --name-fade-dur: 1.2s; }
   #nameLine{
