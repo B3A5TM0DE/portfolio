@@ -99,8 +99,6 @@ body.no-scroll { overflow: hidden; }
 .bullets li { margin: 6px 0; line-height: 1.6; }
 .project-media { border: 1px dashed var(--line); background: #fff; border-radius: 12px; display: grid; place-items: center; min-height: 260px; }
 .project-media span { opacity: .6; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
-.intro-overlay { display: grid; place-items: center; }
-.intro-overlay .sq-wrap { place-self: center; }
 footer { display: none; }
 
 @keyframes blink { 50% { border-color: transparent; } }
@@ -115,16 +113,25 @@ footer { display: none; }
 @media (max-width: 600px) { #subtitle { font-size: 1rem; } .slide { padding: 12px; } }
 
 /* ===== Key-only Intro Overlay (no spotlight / no hints) ===== */
+/* Center the key and stack ALL overlay children on top of each other */
 .intro-overlay {
     position: fixed;
     inset: 0;
-    background: #000;              /* solid black while locked */
+    background: #000;
     display: grid;
-    place-items: center;
+    place-items: center;   /* centers items inside their grid area */
     z-index: 9999;
     overflow: hidden;
   }
-  .intro-overlay.hidden { display: none; }
+  
+  /* Put every direct child in the SAME grid cell (1 / 1), so they overlap */
+  .intro-overlay > * {
+    grid-area: 1 / 1;
+  }
+  
+  /* The key wrapper is centered by the grid; make the wipe stretch full-screen */
+  .intro-overlay .sq-wrap { justify-self: center; align-self: center; }
+  
   
   /* click target wrapper */
   .intro-overlay .sq-wrap {
