@@ -263,6 +263,18 @@ footer { display: none; }
     animation: drawName 2.8s cubic-bezier(.2,.7,0,1) 300ms 1 forwards; /* delay matches your 300ms JS */
   }
   
+  /* Make sure the name is visible (no fade) so the draw is noticeable */
+#nameLine.draw-text {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* Start the draw only when JS adds .draw-start (after font is loaded) */
+  #nameLine.draw-text.draw-start {
+    animation: drawName 2.8s cubic-bezier(.2,.7,0,1) 0ms 1 forwards;
+  }
+  
   @keyframes drawName {
     from { font-variation-settings: "RSEC" 60, "DRAW" 1000; }
     to   { font-variation-settings: "RSEC" 60, "DRAW" 0; }

@@ -137,11 +137,20 @@
       typeTo(hiEl, HI, 0, () => {
         document.querySelector('.intro-line.small .caret')?.remove();   // remove small caret
 
-        // Slight pause, then set text and fade the big line in
-        setTimeout(() => {
-          nameEl.textContent = NAME;
-          (document.getElementById('bigLine') || document.querySelector('.intro-line.big'))?.classList.add('show');
-        }, 300);
+  setTimeout(() => {
+  nameEl.textContent = NAME;
+  const big = document.getElementById('bigLine') || document.querySelector('.intro-line.big');
+  const start = () => {
+    nameEl.classList.add('draw-start');   // triggers the one-time DRAW animation
+    big?.classList.add('show');           // lets your aurora animation run
+  };
+  if (document.fonts && document.fonts.load) {
+    // load a big size so the outlines are ready for the draw morph
+    document.fonts.load('96px "Decovar Draw"').then(start, start);
+  } else {
+    start();
+  }
+}, 300);
       });
     }
 
