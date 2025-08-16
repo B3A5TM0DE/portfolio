@@ -426,11 +426,12 @@
     function start(){
       if (reduce) { revealPage(); return; }
       sq.addEventListener('animationend', function(e){
-        if (e.animationName === 'spin360'){ wr.classList.add('lift'); }
-      }, { once:true });
-      wr.addEventListener('animationstart', function(e){
-        if (e.animationName === 'exitUp'){ revealPage(); }
-      }, { once:true });
+      if (e.animationName === 'spin360'){
+        wr.classList.add('lift');            // fade the key out
+        requestAnimationFrame(revealPage);   // kick the white wipe immediately
+      }
+}, { once:true });
+
       sq.classList.add('spin');
       kh && kh.classList.add('spin');
     }
