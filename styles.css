@@ -248,38 +248,6 @@ footer { display: none; }
     font-display: swap;
   }
   
-  /* Only the variable font + DRAW axis here.
-     Do NOT set background here so aurora-text keeps control of the gradient/animation. */
-  .draw-text {
-    font-family: "Decovar Draw", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    font-weight: 400;
-    font-variation-settings: "RSEC" 60, "DRAW" 1000; /* start undrawn */
-    will-change: font-variation-settings;
-    -webkit-text-fill-color: transparent; /* aurora-text clips the bg */
-  }
-  
-  /* Run the draw once when the big line is revealed */
-  .intro-line.big.show #nameLine.draw-text {
-    animation: drawName 2.8s cubic-bezier(.2,.7,0,1) 300ms 1 forwards; /* delay matches your 300ms JS */
-  }
-  
-  /* Make sure the name is visible (no fade) so the draw is noticeable */
-#nameLine.draw-text {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-  
-  /* Start the draw only when JS adds .draw-start (after font is loaded) */
-  #nameLine.draw-text.draw-start {
-    animation: drawName 2.8s cubic-bezier(.2,.7,0,1) 0ms 1 forwards;
-  }
-  
-  @keyframes drawName {
-    from { font-variation-settings: "RSEC" 60, "DRAW" 1000; }
-    to   { font-variation-settings: "RSEC" 60, "DRAW" 0; }
-  }
-  
   /* Reduced motion: skip animation but keep final look */
   @media (prefers-reduced-motion: reduce) {
     .draw-text {
@@ -287,6 +255,48 @@ footer { display: none; }
       font-variation-settings: "RSEC" 60, "DRAW" 0 !important;
     }
   }
+  
+  /* Use Decovar for the visible name so the SVG overlay matches it */
+#nameLine {
+    font-family: "Decovar Draw", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-weight: 400;
+    font-variation-settings: "RSEC" 60;
+  }
+  
+  /* Anchor for the overlay */
+  .name-spot { position: relative; display: inline-block; }
+  
+  /* SVG stroke overlay that draws the outlines */
+  #nameStroke {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    display: grid; place-items: center;
+    opacity: 1;
+  }
+  #nameStroke svg { width: 100%; height: 100%; overflow: visible; }
+  
+  /* Each letter path */
+  #nameStroke path {
+    fill: none;
+    stroke: var(--ink);               /* solid stroke; change if you want */
+    stroke-width: 0.075em;            /* scales with font-size */
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;/* keep width steady on resize */
+    stroke-dasharray: 1;              /* set by JS after measuring */
+    stroke-dashoffset: 1;             /* ditto */
+  }
+  
+  /* Hide the real gradient text while the stroke draws */
+  #nameLine.hold {
+    opacity: 0 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* Overlay end fade */
+  @keyframes fadeOut { to { opacity: 0; } }
+  #nameStroke.fade-out { animation: fadeOut .28s ease forwards; }
   
   /* smooth fade for the name (keep if not already present) */
   :root { --name-fade-dur: 1.2s; }
