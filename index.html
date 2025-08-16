@@ -385,5 +385,63 @@
     });
   }
 </script>
+<script>
+  /* Minimal key-only overlay */
+  (function(){
+    if ((location.hash || '#/home') === '#/projects') return;
+  
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+    var overlay = document.createElement('div');
+    overlay.className = 'intro-overlay';
+    overlay.innerHTML =
+      '<div class="sq-wrap" tabindex="0" role="button" aria-label="Enter site">'+
+        '<div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div>'+
+      '</div>'+
+      '<div class="white-wipe" aria-hidden="true"></div>';
+    document.body.appendChild(overlay);
+  
+    var sq  = overlay.querySelector('.square');
+    var kh  = overlay.querySelector('.keyhole');
+    var wr  = overlay.querySelector('.sq-wrap');
+    var introText = document.querySelector('.home-page #intro .intro-text');
+  
+    function revealPage(){
+      overlay.classList.add('revealing');
+      var wipe = overlay.querySelector('.white-wipe');
+      if (wipe){
+        requestAnimationFrame(function(){ wipe.style.transform = 'translateY(0%)'; });
+        wipe.addEventListener('transitionend', function(){
+          overlay.classList.add('hidden');
+          if (introText) introText.classList.add('show');
+          window.dispatchEvent(new Event('hero-revealed'));
+        }, { once:true });
+      } else {
+        overlay.classList.add('hidden');
+        if (introText) introText.classList.add('show');
+        window.dispatchEvent(new Event('hero-revealed'));
+      }
+    }
+  
+    function start(){
+      if (reduce) { revealPage(); return; }
+      sq.addEventListener('animationend', function(e){
+        if (e.animationName === 'spin360'){ wr.classList.add('lift'); }
+      }, { once:true });
+      wr.addEventListener('animationstart', function(e){
+        if (e.animationName === 'exitUp'){ revealPage(); }
+      }, { once:true });
+      sq.classList.add('spin');
+      kh && kh.classList.add('spin');
+    }
+  
+    wr.addEventListener('click', start);
+    wr.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); start(); }
+    });
+  
+    if (reduce) revealPage();
+  })();
+  </script>  
 </body>
 </html>
