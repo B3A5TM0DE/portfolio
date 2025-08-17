@@ -34,16 +34,6 @@
               </span>
             </div>                     
           </div>
-          <div class="cta-row">
-            <a class="btn primary" href="#/projects">View Projects</a>
-            <a class="btn" href="resume.pdf" target="_blank" rel="noopener">Resume</a>
-          </div>
-
-          <div class="social">
-            <a href="https://github.com/your-handle">GitHub</a>
-            <span aria-hidden="true">·</span>
-            <a href="https://www.linkedin.com/in/your-handle/">LinkedIn</a>
-          </div>
         </div>
       </div>
       <!-- Visualizer canvas sits behind content -->
@@ -630,11 +620,14 @@
         const x2 = cx + ax * (baseR + len);
         const y2 = cy + ay * (baseR + len);
   
-        // slight base fade to avoid a solid inner ring (doesn't blur length)
-        const g = ctx.createLinearGradient(x1,y1,x2,y2);
-        g.addColorStop(0.00, 'rgba(34,211,238,0.00)');
-        g.addColorStop(0.18, 'rgba(34,211,238,0.50)');
-        g.addColorStop(1.00, COLOR);
+        const LIGHT = '#7C8189';   // lighter effect
+
+        const g = ctx.createLinearGradient(x1, y1, x2, y2);
+        g.addColorStop(0.00, 'rgba(124,129,137,0)');   // LIGHT @ 0% alpha
+        g.addColorStop(0.18, 'rgba(124,129,137,0.5)'); // LIGHT 50%
+        g.addColorStop(1.00, 'rgba(124,129,137,1)');   // LIGHT 100%
+        ctx.strokeStyle = g;
+        ctx.shadowColor = 'rgba(124,129,137,1)';       // if you’re using glow
   
         ctx.strokeStyle = g;
         ctx.lineWidth   = lineW;
