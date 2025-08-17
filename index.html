@@ -23,7 +23,6 @@
       <div class="centered-container">
         <div class="intro-text" id="introText">
           <div class="intro-lines">
-            <p class="tagline">Security-minded engineer building clean, fast experiences.</p>
             <div class="intro-line small">
               <span id="hiLine"></span>
               <span class="caret" aria-hidden="true"></span>
@@ -527,172 +526,178 @@
     }
   })();
   </script>   
-  <script>
-    (function setupMusic(){
-      const audio  = document.getElementById('heroTrack');
-      const canvas = document.getElementById('musicViz');
-      const chip   = document.getElementById('audioChip');
-      const toggle = document.getElementById('audioToggle');
-      if (!audio || !canvas || !chip || !toggle) return;
-    
-      /* ===== Show chip after wipe; auto-start on lock ===== */
-      chip.hidden = true;
-      window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
-    
-      /* ===== Look & feel ===== */
-      const BINS       = 180;   // more bars = smoother ring
-      const RADIUS_FR  = 0.28;  // base radius (fraction of min viewport)
-      const BAR_FR     = 0.20;  // max bar length (fraction of min viewport)
-      const DECAY      = 0.90;  // smoothing (higher = smoother)
-      const TOUCH_FR   = 0.96;  // how much of arc each bar fills (near-touching)
-      const GLOW       = 16;    // glow in px (scales with DPR)
-      const EASING_POW = 1.15;  // >1 softens peaks
-      const BIAS       = 1.20;  // 1.0 linear, >1 biases toward bass
-      const STRIDE     = 7;     // spreads frequencies around ring (odd number)
-      const ROTATE_SPEED = 0.10; // revolutions per second
-      const SMOOTH_MODE = 'ema'; // 'ema' (up/down) | 'peak' (hold peaks)
-    
-      /* ===== Canvas ===== */
-      const ctx = canvas.getContext('2d');
-      let w=0, h=0, dpr=1, cx=0, cy=0;
-    
-      function updateCenter(){
-        const t = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
-        const r = t.getBoundingClientRect();
-        cx = Math.round((r.left + r.width/2) * dpr);
-        cy = Math.round((r.top  + r.height/2) * dpr);
+<script>
+  (function setupMusic(){
+    const audio  = document.getElementById('heroTrack');
+    const canvas = document.getElementById('musicViz');
+    const chip   = document.getElementById('audioChip');
+    const toggle = document.getElementById('audioToggle');
+    if (!audio || !canvas || !chip || !toggle) return;
+  
+    // Show the chip after the wipe; auto-start on lock click
+    chip.hidden = true;
+    window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
+    window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
+  
+    /* ===== Look & feel ===== */
+    const BINS          = 220;   // more bars = smoother ring
+    const RADIUS_FR     = 0.28;  // base radius (fraction of min viewport)
+    const BAR_FR        = 0.20;  // max bar length (fraction of min viewport)
+    const DECAY         = 0.84;  // EMA smoothing (higher = smoother)
+    const TOUCH_FR      = 0.98;  // arc fraction a bar fills (near touching)
+    const GLOW          = 16;    // glow in px (scales with DPR)
+    const EASING_POW    = 1.10;  // >1 softens harsh peaks
+    const BIAS          = 1.25;  // 1 linear, >1 = more bass emphasis
+    const ROTATE_SPEED  = 0.10;  // revolutions per second
+    const FREQ_SCROLL_S = 0.15;  // cycles per second to drift along FFT
+  
+    /* ===== Canvas ===== */
+    const ctx = canvas.getContext('2d');
+    let w=0, h=0, dpr=1, cx=0, cy=0;
+  
+    function updateCenter(){
+      const t = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
+      const r = t.getBoundingClientRect();
+      cx = Math.round((r.left + r.width/2) * dpr);
+      cy = Math.round((r.top  + r.height/2) * dpr);
+    }
+    function resize(){
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = canvas.width  = Math.floor(innerWidth  * dpr);
+      h = canvas.height = Math.floor(innerHeight * dpr);
+      canvas.style.width  = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      updateCenter();
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('hero-revealed', updateCenter);
+    window.addEventListener('name-shown', updateCenter, { once:true });
+    resize();
+  
+    /* ===== Audio ===== */
+    let ac=null, analyser=null, fft=null;
+    function ensureAudio(){
+      if (ac) return;
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      const src  = ac.createMediaElementSource(audio);
+      const gain = ac.createGain(); gain.gain.value = 0.7;
+      analyser   = ac.createAnalyser(); analyser.fftSize = 1024;
+      fft        = new Uint8Array(analyser.frequencyBinCount);
+      src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
+    }
+  
+    /* ===== Helpers for smooth sampling ===== */
+    function sampleFFTAt(fracIndex, usable){
+      // Linear interpolation between neighboring FFT bins
+      const i0 = Math.max(0, Math.min(usable-1, Math.floor(fracIndex)));
+      const i1 = Math.max(0, Math.min(usable-1, i0 + 1));
+      const t  = Math.min(1, Math.max(0, fracIndex - i0));
+      const v0 = fft[i0], v1 = fft[i1];
+      return ((v0 + (v1 - v0) * t) / 255); // 0..1
+    }
+  
+    /* ===== Bars drawing ===== */
+    const smooth = new Float32Array(BINS).fill(0);
+  
+    function drawRadialBars(angleOffset, freqPhase){
+      analyser.getByteFrequencyData(fft);
+  
+      const usable = Math.floor(fft.length * 0.75); // focus on lows/mids a bit more
+      for (let i = 0; i < BINS; i++) {
+        // wrap 0..1, bias toward bass, then map to 0..usable-1 (fractional)
+        let t = (i / BINS + freqPhase) % 1;              // drift over time
+        const idxFrac = Math.pow(t, BIAS) * (usable - 1);
+        // average a tiny window for extra smoothness
+        const v =
+          ( sampleFFTAt(idxFrac - 1, usable)
+          + sampleFFTAt(idxFrac,     usable)*2
+          + sampleFFTAt(idxFrac + 1, usable)
+          ) / 4;
+  
+        const ema = smooth[i] * DECAY + v * (1 - DECAY);
+        smooth[i] = ema;
       }
-      function resize(){
-        dpr = Math.min(2, window.devicePixelRatio || 1);
-        w = canvas.width  = Math.floor(innerWidth  * dpr);
-        h = canvas.height = Math.floor(innerHeight * dpr);
-        canvas.style.width  = innerWidth + 'px';
-        canvas.style.height = innerHeight + 'px';
-        updateCenter();
+  
+      const minwh  = Math.min(w,h);
+      const baseR  = minwh * RADIUS_FR;
+      const maxLen = minwh * BAR_FR;
+  
+      // thickness so bars nearly touch
+      const arcPerBin = (2 * Math.PI * baseR) / BINS;
+      const lineW     = Math.max(2*dpr, arcPerBin * TOUCH_FR);
+  
+      ctx.lineCap = 'round';
+      ctx.shadowColor = 'rgba(34,211,238,0.35)';
+      ctx.shadowBlur  = GLOW * dpr;
+  
+      for (let i=0;i<BINS;i++){
+        const angle = angleOffset + (i / BINS) * Math.PI * 2;
+        const ax = Math.cos(angle), ay = Math.sin(angle);
+        const eased = Math.pow(smooth[i], EASING_POW);
+        const len   = eased * maxLen;
+  
+        const x1 = cx + ax * baseR;
+        const y1 = cy + ay * baseR;
+        const x2 = cx + ax * (baseR + len);
+        const y2 = cy + ay * (baseR + len);
+  
+        // gradient: invisible at base → bright at tip (hides inner circle)
+        const g = ctx.createLinearGradient(x1,y1,x2,y2);
+        g.addColorStop(0.00, 'rgba(34,211,238,0.00)');
+        g.addColorStop(0.35, 'rgba(34,211,238,0.55)');
+        g.addColorStop(1.00, 'rgba(34,211,238,1.00)');
+  
+        ctx.strokeStyle = g;
+        ctx.lineWidth   = lineW;
+  
+        ctx.beginPath();
+        ctx.moveTo(x1,y1);
+        ctx.lineTo(x2,y2);
+        ctx.stroke();
       }
-      window.addEventListener('resize', resize);
-      window.addEventListener('hero-revealed', updateCenter);
-      window.addEventListener('name-shown', updateCenter, { once:true });
-      resize();
-    
-      /* ===== Audio ===== */
-      let ac=null, analyser=null, freq=null;
-      function ensureAudio(){
-        if (ac) return;
-        ac = new (window.AudioContext || window.webkitAudioContext)();
-        const src  = ac.createMediaElementSource(audio);
-        const gain = ac.createGain(); gain.gain.value = 0.7;
-        analyser   = ac.createAnalyser(); analyser.fftSize = 1024;
-        freq       = new Uint8Array(analyser.frequencyBinCount);
-        src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
-      }
-    
-      /* ===== Bars drawing ===== */
-      const smooth = new Float32Array(BINS).fill(0);
-    
-      function drawRadialBars(angleOffset){
-        analyser.getByteFrequencyData(freq);
-    
-        const usable = Math.floor(freq.length * 0.70);
-        for (let i = 0; i < BINS; i++) {
-          const t = i / (BINS - 1);
-    
-          // 1) pick a bin with optional bass bias
-          let idx = Math.floor(Math.pow(t, BIAS) * usable);
-    
-          // 2) spread that band around the circle so neighbors aren't adjacent freqs
-          idx = (idx * STRIDE) % usable;
-    
-          // 3) normalize + smooth
-          const v = freq[idx] / 255;
-          if (SMOOTH_MODE === 'ema') {
-            smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);
-          } else {
-            smooth[i] = Math.max(smooth[i] * DECAY, v);
-          }
-        }
-    
-        const minwh  = Math.min(w,h);
-        const baseR  = minwh * RADIUS_FR;
-        const maxLen = minwh * BAR_FR;
-    
-        // thickness so bars nearly touch
-        const arcPerBin = (2 * Math.PI * baseR) / BINS;
-        const lineW     = Math.max(2*dpr, arcPerBin * TOUCH_FR);
-    
-        ctx.lineCap = 'round';
-        ctx.shadowColor = 'rgba(34,211,238,0.35)';
-        ctx.shadowBlur  = GLOW * dpr;
-    
-        for (let i=0;i<BINS;i++){
-          const angle = angleOffset + (i / BINS) * Math.PI * 2; // <— rotation here
-          const ax = Math.cos(angle), ay = Math.sin(angle);
-          const eased = Math.pow(smooth[i], EASING_POW);
-          const len   = eased * maxLen;
-    
-          const x1 = cx + ax * baseR;
-          const y1 = cy + ay * baseR;
-          const x2 = cx + ax * (baseR + len);
-          const y2 = cy + ay * (baseR + len);
-    
-          // gradient: invisible at base → bright at tip (hides inner circle)
-          const g = ctx.createLinearGradient(x1,y1,x2,y2);
-          g.addColorStop(0.00, 'rgba(34,211,238,0.00)');
-          g.addColorStop(0.35, 'rgba(34,211,238,0.55)');
-          g.addColorStop(1.00, 'rgba(34,211,238,1.00)');
-    
-          ctx.strokeStyle = g;
-          ctx.lineWidth   = lineW;
-    
-          ctx.beginPath();
-          ctx.moveTo(x1,y1);
-          ctx.lineTo(x2,y2);
-          ctx.stroke();
-        }
-    
-        ctx.shadowBlur = 0;
-      }
-    
-      /* ===== Loop & controls ===== */
-      let running=false, rafId=0, angleOffset=0, last=performance.now();
-    
-      function frame(now){
-        rafId = requestAnimationFrame(frame);
-        const dt = Math.min(0.05, (now - last) / 1000);
-        last = now;
-    
-        ctx.clearRect(0,0,w,h);
-        if (!running || !analyser) return;
-    
-        // advance rotation (radians)
-        angleOffset += ROTATE_SPEED * dt * Math.PI * 2;
-    
-        drawRadialBars(angleOffset);
-      }
-    
-      async function play(){
-        ensureAudio();
-        if (ac.state === 'suspended') await ac.resume();
-        await audio.play().catch(()=>{});
-        running = true;
-        toggle.setAttribute('aria-pressed','true');
-        toggle.textContent = '♫ Pause';
-        if (!rafId) { last = performance.now(); rafId = requestAnimationFrame(frame); }
-      }
-      function pause(){
-        running = false;
-        toggle.setAttribute('aria-pressed','false');
-        toggle.textContent = '♫ Play';
-        audio.pause();
-      }
-    
-      toggle.addEventListener('click', () =>
-        toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
-      );
-    
-      // start music + viz exactly on lock click (after play() exists)
-      window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
-    })();
-    </script>
-  </body>    
+  
+      ctx.shadowBlur = 0;
+    }
+  
+    /* ===== Loop & controls ===== */
+    let running=false, rafId=0, angleOffset=0, freqPhase=0, last=performance.now();
+  
+    function frame(now){
+      rafId = requestAnimationFrame(frame);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+  
+      ctx.clearRect(0,0,w,h);
+      if (!running || !analyser) return;
+  
+      // advance rotation and frequency scroll
+      angleOffset += ROTATE_SPEED  * dt * Math.PI * 2;    // radians
+      freqPhase   = (freqPhase + FREQ_SCROLL_S * dt) % 1; // 0..1
+  
+      drawRadialBars(angleOffset, freqPhase);
+    }
+  
+    async function play(){
+      ensureAudio();
+      if (ac.state === 'suspended') await ac.resume();
+      await audio.play().catch(()=>{});
+      running = true;
+      toggle.setAttribute('aria-pressed','true');
+      toggle.textContent = '♫ Pause';
+      if (!rafId) { last = performance.now(); rafId = requestAnimationFrame(frame); }
+    }
+    function pause(){
+      running = false;
+      toggle.setAttribute('aria-pressed','false');
+      toggle.textContent = '♫ Play';
+      audio.pause();
+    }
+  
+    toggle.addEventListener('click', () =>
+      toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
+    );
+  })();
+  </script>
+  
+</body>    
 </html>
