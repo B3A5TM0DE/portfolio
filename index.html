@@ -543,12 +543,12 @@
   
     /* ===== Visual config (circular waveform) ===== */
     const EFFECT    = 'wave';
-    const POINTS    = 540;   // more points = smoother circle (perf cost)
+    const POINTS    = 720;   // more points = smoother circle (perf cost)
     const RADIUS_FR = 0.28;  // base radius as fraction of min(viewport)
-    const AMP_FR    = 0.10;  // wave displacement amount
-    const SMOOTH    = 0.92;  // 0..1 EMA smoothing (higher = smoother)
+    const AMP_FR    = 0.12;  // wave displacement amount
+    const SMOOTH    = 0.95;  // 0..1 EMA smoothing (higher = smoother)
     const OPACITY   = 0.85;  // stroke opacity
-    const THICKNESS = 3.0;   // px (scales with DPR)
+    const THICKNESS = 4.0;   // px (scales with DPR)
     const GLOW      = 8;     // shadowBlur (0 = off)
     const BASE_RING_OPACITY = 0.22;
   
