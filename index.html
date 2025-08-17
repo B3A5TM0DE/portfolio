@@ -522,18 +522,16 @@
     const toggle  = document.getElementById('audioToggle');
     if (!audio || !canvas || !chip || !toggle) return;
   
+    // 👈 simple & chill
+    const EFFECT = 'halo'; // 'halo' | 'bars'
+  
     /* ---------- show/hide control ---------- */
     function showChip(){ chip.hidden = false; }
     function overlayIsPresent(){
-      // overlay exists AND is not marked .hidden
       const ov = document.querySelector('.intro-overlay');
       return ov && !ov.classList.contains('hidden');
     }
-  
-    // Show chip only after the overlay reveal…
     window.addEventListener('hero-revealed', showChip, { once:true });
-  
-    // …or, if there’s no overlay (deep-link to /projects, reduced-motion, etc.), show it after DOM is ready.
     if (document.readyState !== 'loading') {
       if (!overlayIsPresent()) showChip();
     } else {
@@ -541,18 +539,30 @@
         if (!overlayIsPresent()) showChip();
       });
     }
+    window.addEventListener('load', () => {
+      if (!overlayIsPresent()) showChip();
+    });
   
     /* ---------- Canvas ---------- */
-    const ctx2d = canvas.getContext('2d');
-    let w=0,h=0,dpr=1;
+    const ctx = canvas.getContext('2d');
+    let w=0,h=0,dpr=1, cx=0, cy=0;
+  
     function resize(){
       dpr = Math.min(2, window.devicePixelRatio || 1);
       w = canvas.width  = Math.floor(innerWidth  * dpr);
       h = canvas.height = Math.floor(innerHeight * dpr);
       canvas.style.width  = innerWidth + 'px';
       canvas.style.height = innerHeight + 'px';
+      updateCenter();
     }
-    window.addEventListener('resize', resize);
+    function updateCenter(){
+      const t = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
+      const r = t.getBoundingClientRect();
+      cx = Math.round((r.left + r.width/2) * dpr);
+      cy = Math.round((r.top  + r.height/2) * dpr);
+    }
+    window.addEventListener('resize', ()=>{ resize(); });
+    window.addEventListener('hero-revealed', updateCenter);
     resize();
   
     /* ---------- Audio graph (init on first click) ---------- */
@@ -568,39 +578,89 @@
       src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
     }
   
-    /* ---------- Viz loop (simple bars) ---------- */
-    function loop(){
-      raf = requestAnimationFrame(loop);
-      ctx2d.clearRect(0,0,w,h);
-      if (!running || !analyser) return;
+    // 20–160 Hz average
+    function bassEnergy(){
+      if (!analyser || !data) return 0;
       analyser.getByteFrequencyData(data);
+      const ny = ac.sampleRate / 2;
+      const low = 20, high = 160;
+      const li = Math.max(0, Math.floor(low  / ny * data.length));
+      const hi = Math.min(data.length-1, Math.floor(high / ny * data.length));
+      let sum=0, n=0;
+      for(let i=li;i<=hi;i++){ sum += data[i]; n++; }
+      return (sum / Math.max(1,n)) / 255; // 0..1
+    }
   
+    /* ---------- Effects ---------- */
+  
+    // Soft, breathing halo around the name
+    function drawHalo(bass, t){
+      // very subtle alpha; tiny bass response
+      const alpha = 0.05 + bass * 0.15;
+      const baseR = Math.min(w,h) * 0.26;
+      const r     = baseR * (0.96 + 0.04 * Math.sin(t * 0.8)); // gentle “breath”
+  
+      // fill glow
+      const g = ctx.createRadialGradient(cx,cy,0, cx,cy,r);
+      g.addColorStop(0, `rgba(34,211,238,${alpha})`);
+      g.addColorStop(1, `rgba(34,211,238,0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,w,h);
+  
+      // whisper-thin ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, r*0.85, 0, Math.PI*2);
+      ctx.strokeStyle = '#22d3ee';
+      ctx.globalAlpha = 0.05 + bass*0.08;
+      ctx.lineWidth   = dpr * (1 + bass*2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  
+    // (kept in case you want to switch back)
+    function drawBars(){
       const bins = 24;
       const pad  = Math.max(2, Math.floor(w/bins*0.2));
       const barW = Math.floor((w - pad*(bins+1)) / bins);
       const usable = Math.floor(data.length * 0.65);
-  
-      ctx2d.globalAlpha = 0.25;
-      ctx2d.fillStyle = '#22d3ee';
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#22d3ee';
       for (let i=0;i<bins;i++){
         const idx = Math.floor(i/bins * usable);
         const v   = data[idx] / 255;
         const hBar = Math.max(2, v * (h*0.18));
         const x = Math.floor(pad + i*(barW+pad));
         const y = h - hBar - pad;
-        ctx2d.fillRect(x, y, barW, hBar);
+        ctx.fillRect(x, y, barW, hBar);
       }
-      ctx2d.globalAlpha = 1;
+      ctx.globalAlpha = 1;
+    }
+  
+    /* ---------- Loop ---------- */
+    function loop(){
+      raf = requestAnimationFrame(loop);
+      ctx.clearRect(0,0,w,h);
+  
+      // When paused, keep a faint static halo so it still feels alive
+      const t = performance.now()/1000;
+      let bass = 0;
+      if (running) {
+        bass = bassEnergy();
+      }
+  
+      if (EFFECT === 'halo')      drawHalo(bass, t);
+      else /* EFFECT === 'bars' */ running && drawBars();
     }
     raf = requestAnimationFrame(loop);
   
+    /* ---------- Controls ---------- */
     function setBtn(on){
       running = on;
       toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
       toggle.textContent = on ? '♫ Pause' : '♫ Play';
     }
   
-    // Pre-warm on gesture for Safari
+    // Pre-warm on gesture (Safari)
     toggle.addEventListener('pointerdown', () => {
       try { if (!ac) initGraph(); if (ac.state === 'suspended') ac.resume(); } catch {}
     });
@@ -616,7 +676,7 @@
         setBtn(true);
       }).catch(err => {
         console.error('play() blocked:', err);
-        alert('Could not start audio. Ensure audio/welcome.mp3 is being served and not blocked by CORS.');
+        alert('Could not start audio. Ensure audio/welcome.mp3 is accessible.');
       });
     });
   
