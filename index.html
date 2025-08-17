@@ -43,7 +43,7 @@
       <!-- Audio controls (small chip) -->
       <div class="audio-chip" id="audioChip" hidden>
         <button id="audioToggle" aria-pressed="false" aria-label="Play music">♫ Play</button>
-      </div>
+      </div>      
 
       <!-- Your track (swap src with your file/URL) -->
       <audio id="heroTrack" src="audio/welcome.mp3" preload="auto"></audio>
@@ -151,6 +151,8 @@
         setTimeout(() => {
           nameEl.textContent = NAME;
           (document.getElementById('bigLine') || document.querySelector('.intro-line.big'))?.classList.add('show');
+            // 👉 tell the rest of the page the name is visible
+          window.dispatchEvent(new Event('name-shown'));
         }, 300);
       });
     }
@@ -473,32 +475,34 @@
   
     let started = false;
     function startSequence(){
-  if (started) return;
-  started = true;
+      if (started) return;
+      started = true;
 
-  if (reduce){
-    decodeEl.textContent = 'WELCOME';
-    revealPage();
-    return;
-  }
+      window.__startSiteAudio?.();
 
-  // show the reserved line without causing layout shift
-  decodeEl.style.visibility = 'visible';
+      if (reduce){
+        decodeEl.textContent = 'WELCOME';
+        revealPage();
+        return;
+      }
 
-  decodeWelcome(decodeEl, 'WELCOME').then(function(){
-    setTimeout(function(){
-      sq.addEventListener('animationend', function(e){
-        if (e.animationName === 'spin360'){
-          wr.classList.add('lift');
-          requestAnimationFrame(revealPage);
-        }
-      }, { once:true });
+      // show the reserved line without causing layout shift
+      decodeEl.style.visibility = 'visible';
 
-      sq.classList.add('spin');
-      if (kh) kh.classList.add('spin');
-    }, 100);
-  });
-}
+      decodeWelcome(decodeEl, 'WELCOME').then(function(){
+        setTimeout(function(){
+          sq.addEventListener('animationend', function(e){
+            if (e.animationName === 'spin360'){
+              wr.classList.add('lift');
+              requestAnimationFrame(revealPage);
+            }
+          }, { once:true });
+
+          sq.classList.add('spin');
+          if (kh) kh.classList.add('spin');
+        }, 100);
+      });
+    }
 
   
     // interactions
@@ -515,155 +519,149 @@
   })();
   </script>   
 <script>
-  (function setupMusic(){
-    const audio  = document.getElementById('heroTrack');
-    const canvas = document.getElementById('musicViz');
-    const chip   = document.getElementById('audioChip');
-    const toggle = document.getElementById('audioToggle');
-    if (!audio || !canvas || !chip || !toggle) return;
-  
-    // hide until overlay finishes
-    chip.hidden = true;
-  
-    /* ===== Effect config (breathing halo only) ===== */
-    const EFFECT        = 'halo'; // 'halo' | 'bars' (only halo code included)
-    const BREATH_SPEED  = 0.35;   // cycles/sec (lower = slower)
-    const BREATH_DEPTH  = 0.05;   // ±5% radius
-    const BASS_MIX      = 0.00;   // 0 = no music reaction
-    const BASS_SMOOTH   = 0.08;   // smoothing if you ever >0 the mix
-  
-    /* ===== Canvas ===== */
-    const ctx = canvas.getContext('2d');
-    let w=0, h=0, dpr=1, cx=0, cy=0;
-    function resize(){
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-      w = canvas.width  = Math.floor(innerWidth  * dpr);
-      h = canvas.height = Math.floor(innerHeight * dpr);
-      canvas.style.width  = innerWidth + 'px';
-      canvas.style.height = innerHeight + 'px';
-      updateCenter();
-    }
-    function updateCenter(){
-      const t = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
-      const r = t.getBoundingClientRect();
-      cx = Math.round((r.left + r.width/2) * dpr);
-      cy = Math.round((r.top  + r.height/2) * dpr);
-    }
-    window.addEventListener('resize', resize);
-    window.addEventListener('hero-revealed', updateCenter);
-    resize();
-  
-    /* ===== Audio graph (lazy-init) ===== */
-    let ac=null, analyser=null, data=null;
-    function ensureAudio(){
-      if (ac) return;
-      ac = new (window.AudioContext || window.webkitAudioContext)();
-      const src  = ac.createMediaElementSource(audio);
-      const gain = ac.createGain(); gain.gain.value = 0.7;
-      analyser   = ac.createAnalyser(); analyser.fftSize = 1024;
-      data       = new Uint8Array(analyser.frequencyBinCount);
-      src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
-    }
-    function getBassEnergy(){
-      if (!analyser || !data) return 0;
-      analyser.getByteFrequencyData(data);
-      const ny = ac.sampleRate / 2;
-      const low = 20, high = 160;
-      const li = Math.max(0, Math.floor(low  / ny * data.length));
-      const hi = Math.min(data.length-1, Math.floor(high / ny * data.length));
-      let sum = 0;
-      for (let i=li;i<=hi;i++) sum += data[i];
-      return sum / ((hi - li + 1) * 255); // 0..1
-    }
-  
-    /* ===== Effect drawing ===== */
-    let breathPhase = 0;
-    let bassSmooth  = 0;
-  
-    function drawHalo(bassAmt){
-      const baseR = Math.min(w, h) * 0.28;
-      const r = baseR
-              * (1 + BREATH_DEPTH * Math.sin(breathPhase))
-              * (1 + BASS_MIX * bassAmt * 0.04);
-  
-      // soft glow
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.25);
-      g.addColorStop(0, 'rgba(34,211,238,0.12)');
-      g.addColorStop(1, 'rgba(34,211,238,0.00)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,w,h);
-  
-      // single outer ring
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = '#22d3ee';
-      ctx.globalAlpha = 0.22;
-      ctx.lineWidth = 2 * dpr;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-  
-    /* ===== Loop ===== */
-    let running = false;
-    let rafId = 0;
-    let last = performance.now();
-  
-    function frame(now){
-      rafId = requestAnimationFrame(frame);
-      if (!running) { ctx.clearRect(0,0,w,h); return; }
-  
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-  
-      ctx.clearRect(0,0,w,h);
-  
-      // slow “breath” oscillator
-      breathPhase += dt * BREATH_SPEED * 2 * Math.PI;
-  
-      // optional bass mix (kept at 0 by default so no “shooting”)
-      const bass = BASS_MIX > 0 ? getBassEnergy() : 0;
-      bassSmooth += (bass - bassSmooth) * BASS_SMOOTH;
-  
-      if (EFFECT === 'halo') drawHalo(bassSmooth);
-    }
-  
-    /* ===== Controls ===== */
-    async function play(){
-      ensureAudio();
-      if (ac.state === 'suspended') await ac.resume();
-      await audio.play();
-      running = true;
-      toggle.setAttribute('aria-pressed','true');
-      toggle.textContent = '♫ Pause';
-      if (!rafId) { last = performance.now(); rafId = requestAnimationFrame(frame); }
-    }
-    function pause(){
-      running = false;
-      toggle.setAttribute('aria-pressed','false');
-      toggle.textContent = '♫ Play';
-      audio.pause();
-      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
-      ctx.clearRect(0,0,w,h);
-    }
-    toggle.addEventListener('click', () => {
-      toggle.getAttribute('aria-pressed') === 'true' ? pause() : play();
-    });
-  
-    /* ===== Show the chip only after the key overlay ===== */
-    function overlayVisible(){
-      const ov = document.querySelector('.intro-overlay');
-      return ov && !ov.classList.contains('hidden');
-    }
-    function showChip(){ chip.hidden = false; updateCenter(); }
-    window.addEventListener('hero-revealed', showChip, { once:true });
-    // Fallbacks if the overlay is skipped/not present
-    if (document.readyState !== 'loading') {
-      if (!overlayVisible()) showChip();
-    } else {
-      document.addEventListener('DOMContentLoaded', () => { if (!overlayVisible()) showChip(); });
-    }
-    window.addEventListener('load', () => { if (!overlayVisible()) showChip(); });
-  })();
-  </script>  
+(function setupMusic(){
+  const audio  = document.getElementById('heroTrack');
+  const canvas = document.getElementById('musicViz');
+  const chip   = document.getElementById('audioChip');
+  const toggle = document.getElementById('audioToggle');
+  if (!audio || !canvas || !chip || !toggle) return;
+
+  // keep hidden until overlay finishes
+  chip.hidden = true;
+
+  /* ===== Effect config (breathing halo only) ===== */
+  const EFFECT        = 'halo';
+  const BREATH_SPEED  = 0.35;
+  const BREATH_DEPTH  = 0.05;
+  const BASS_MIX      = 0.00;   // keep 0 for no “shoot-in” feel
+  const BASS_SMOOTH   = 0.08;
+
+  /* ===== Canvas ===== */
+  const ctx = canvas.getContext('2d');
+  let w=0, h=0, dpr=1, cx=0, cy=0;
+  function resize(){
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    w = canvas.width  = Math.floor(innerWidth  * dpr);
+    h = canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width  = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    updateCenter();
+  }
+  function updateCenter(){
+    const t = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
+    const r = t.getBoundingClientRect();
+    cx = Math.round((r.left + r.width/2) * dpr);
+    cy = Math.round((r.top  + r.height/2) * dpr);
+  }
+  addEventListener('resize', resize);
+  addEventListener('hero-revealed', updateCenter);
+  resize();
+
+  /* ===== Audio graph (lazy-init) ===== */
+  let ac=null, analyser=null, data=null;
+  function ensureAudio(){
+    if (ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const src  = ac.createMediaElementSource(audio);
+    const gain = ac.createGain(); gain.gain.value = 0.7;
+    analyser   = ac.createAnalyser(); analyser.fftSize = 1024;
+    data       = new Uint8Array(analyser.frequencyBinCount);
+    src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
+  }
+  function getBassEnergy(){
+    if (!analyser || !data) return 0;
+    analyser.getByteFrequencyData(data);
+    const ny = ac.sampleRate / 2, low=20, high=160;
+    const li = Math.max(0, Math.floor(low  / ny * data.length));
+    const hi = Math.min(data.length-1, Math.floor(high / ny * data.length));
+    let sum = 0; for (let i=li;i<=hi;i++) sum += data[i];
+    return sum / ((hi - li + 1) * 255);
+  }
+
+  /* ===== Effect drawing ===== */
+  let breathPhase = 0, bassSmooth = 0;
+
+  function drawHalo(bassAmt){
+    const baseR = Math.min(w, h) * 0.28;
+    const r = baseR
+            * (1 + BREATH_DEPTH * Math.sin(breathPhase))
+            * (1 + BASS_MIX * bassAmt * 0.04);
+
+    // soft glow
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.25);
+    g.addColorStop(0, 'rgba(34,211,238,0.12)');
+    g.addColorStop(1, 'rgba(34,211,238,0.00)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    // single outer ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = '#22d3ee';
+    ctx.globalAlpha = 0.22;
+    ctx.lineWidth = 2 * dpr;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /* ===== Loop (only draw after name is shown) ===== */
+  let running = false;      // audio is playing
+  let visReady = false;     // name is visible
+  let rafId = 0, last = performance.now();
+
+  addEventListener('name-shown', ()=> { visReady = true; updateCenter(); }, { once:true });
+  // safety: if page loads with name already visible
+  if (document.getElementById('bigLine')?.classList.contains('show')) visReady = true;
+
+  function frame(now){
+    rafId = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    ctx.clearRect(0,0,w,h);
+    if (!running || !visReady) return;
+
+    breathPhase += dt * BREATH_SPEED * 2 * Math.PI;
+    const bass = BASS_MIX > 0 ? getBassEnergy() : 0;
+    bassSmooth += (bass - bassSmooth) * BASS_SMOOTH;
+
+    drawHalo(bassSmooth);
+  }
+  rafId = requestAnimationFrame(frame);
+
+  /* ===== Controls ===== */
+  async function play(){
+    ensureAudio();
+    if (ac.state === 'suspended') await ac.resume();
+    await audio.play();
+    running = true;
+    toggle.setAttribute('aria-pressed','true');
+    toggle.textContent = '♫ Pause';
+  }
+  function pause(){
+    running = false;
+    toggle.setAttribute('aria-pressed','false');
+    toggle.textContent = '♫ Play';
+    audio.pause();
+  }
+  toggle.addEventListener('click', () => {
+    toggle.getAttribute('aria-pressed') === 'true' ? pause() : play();
+  });
+
+  // 👉 expose a starter the lock can call
+  window.__startSiteAudio = play;
+
+  /* ===== Show chip only after overlay ===== */
+  function overlayVisible(){
+    const ov = document.querySelector('.intro-overlay');
+    return ov && !ov.classList.contains('hidden');
+  }
+  function showChip(){ chip.hidden = false; updateCenter(); }
+  addEventListener('hero-revealed', showChip, { once:true });
+  if (document.readyState !== 'loading') { if (!overlayVisible()) showChip(); }
+  else { document.addEventListener('DOMContentLoaded', ()=> { if (!overlayVisible()) showChip(); }); }
+  addEventListener('load', ()=> { if (!overlayVisible()) showChip(); });
+})();
+</script>
   </body>
 </html>
