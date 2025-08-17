@@ -37,6 +37,17 @@
           
         </div>
       </div>
+      <!-- Visualizer canvas sits behind content -->
+      <canvas id="musicViz" aria-hidden="true"></canvas>
+
+      <!-- Audio controls (small chip) -->
+      <div class="audio-chip" id="audioChip" hidden>
+        <button id="audioToggle" aria-pressed="false" aria-label="Play music">♫ Play</button>
+      </div>
+
+      <!-- Your track (swap src with your file/URL) -->
+      <audio id="heroTrack" src="/audio/your-track.mp3" preload="auto" crossorigin="anonymous"></audio>
+
     </section>
   </div>
 
@@ -501,6 +512,163 @@
       revealPage();
     }
   })();
-  </script>    
+  </script>   
+  <script>
+    (function(){
+      const audioEl = document.getElementById('heroTrack');
+      const canvas  = document.getElementById('musicViz');
+      const chip    = document.getElementById('audioChip');
+      const toggle  = document.getElementById('audioToggle');
+    
+      if(!audioEl || !canvas || !chip || !toggle) return;
+    
+      const reduce  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let ctx, srcNode, analyser, gain, freqData, rafId = null;
+      let audioCtx = null, running = false;
+    
+      // Canvas setup
+      const c = canvas.getContext('2d');
+      let w=0, h=0, dpr=1, cx=0, cy=0;
+      function size(){
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        w = canvas.width  = Math.floor(innerWidth  * dpr);
+        h = canvas.height = Math.floor(innerHeight * dpr);
+        canvas.style.width  = innerWidth + 'px';
+        canvas.style.height = innerHeight + 'px';
+        updateCenter();
+      }
+      function updateCenter(){
+        // Center on your big name line if present
+        const target = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
+        const r = target.getBoundingClientRect();
+        cx = Math.round((r.left + r.width/2) * dpr);
+        cy = Math.round((r.top  + r.height/2) * dpr);
+      }
+      window.addEventListener('resize', size);
+      size();
+    
+      // Simple ripple objects
+      const ripples = [];
+      function spawnRipple(energy){
+        ripples.push({
+          r: 0,
+          a: Math.min(0.7, 0.35 + energy * 0.8),   // alpha
+          w: 4 + energy * 10,                      // line width
+          g: 220 + energy * 320                    // growth px/sec
+        });
+      }
+    
+      // Audio graph
+      async function ensureAudio(){
+        if(audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        srcNode  = audioCtx.createMediaElementSource(audioEl);
+        gain     = audioCtx.createGain();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+    
+        srcNode.connect(gain);
+        gain.connect(analyser);
+        analyser.connect(audioCtx.destination);
+    
+        gain.gain.value = 0.7; // default volume
+      }
+    
+      // Bass window (20–160 Hz)
+      function getBassEnergy(){
+        analyser.getByteFrequencyData(freqData);
+        const ny = audioCtx.sampleRate / 2;
+        const low = 20, high = 160;
+        const li = Math.max(0, Math.floor(low  / ny * freqData.length));
+        const hi = Math.min(freqData.length-1, Math.floor(high / ny * freqData.length));
+        let sum = 0; let n = 0;
+        for(let i=li;i<=hi;i++){ sum += freqData[i]; n++; }
+        return (sum / Math.max(1,n)) / 255; // 0..1
+      }
+    
+      // Animation loop
+      let last = performance.now();
+      let prevBass = 0, spawnCooldown = 0;
+      function loop(now){
+        rafId = requestAnimationFrame(loop);
+        const dt = Math.min(0.05, (now - last)/1000); // clamp
+        last = now;
+    
+        // Ambient fade
+        c.clearRect(0,0,w,h);
+    
+        if(!running) return;
+    
+        const bass = getBassEnergy();
+        const rising = bass > prevBass + 0.04;
+        spawnCooldown -= dt;
+    
+        // Spawn a ripple on strong bass & cooldown elapsed
+        if(bass > 0.28 && rising && spawnCooldown <= 0){
+          spawnRipple(bass);
+          spawnCooldown = 0.11; // seconds
+        }
+        prevBass = bass;
+    
+        // Draw existing ripples
+        for(let i=ripples.length-1; i>=0; i--){
+          const r = ripples[i];
+          r.r += r.g * dt;
+          r.a *= Math.pow(0.985, (dt * 60)); // nice smooth fade
+          if(r.a < 0.02 || r.r > Math.hypot(w,h)) { ripples.splice(i,1); continue; }
+    
+          c.beginPath();
+          c.arc(cx, cy, r.r, 0, Math.PI*2);
+          c.strokeStyle = `rgba(34,211,238,${r.a})`; // cyan-ish
+          c.lineWidth = r.w * dpr;
+          c.stroke();
+        }
+    
+        // Soft glowy center based on current bass
+        const glow = Math.min(0.35, 0.08 + bass * 0.3);
+        const gr = c.createRadialGradient(cx,cy,0, cx,cy, Math.min(w,h)*0.35);
+        gr.addColorStop(0, `rgba(34,211,238,${glow})`);
+        gr.addColorStop(1, `rgba(34,211,238,0)`);
+        c.fillStyle = gr;
+        c.beginPath(); c.rect(0,0,w,h); c.fill();
+      }
+    
+      // Toggle playback
+      async function play(){
+        await ensureAudio();
+        if(audioCtx.state === 'suspended') await audioCtx.resume();
+        running = true;
+        toggle.setAttribute('aria-pressed','true');
+        toggle.textContent = '♫ Pause';
+        try { await audioEl.play(); } catch(e){ /* ignored */ }
+        if(!rafId) { last = performance.now(); rafId = requestAnimationFrame(loop); }
+      }
+      function pause(){
+        running = false;
+        toggle.setAttribute('aria-pressed','false');
+        toggle.textContent = '♫ Play';
+        audioEl.pause();
+      }
+    
+      // Show chip after your unlock, or on DOM ready fallback
+      function showChip(){ chip.hidden = false; updateCenter(); }
+      window.addEventListener('hero-revealed', showChip, { once:true });
+      document.addEventListener('DOMContentLoaded', () => {
+        // If you sometimes skip the overlay, ensure the chip appears:
+        setTimeout(()=>{ if(chip.hidden) showChip(); }, 600);
+      });
+    
+      toggle.addEventListener('click', async ()=>{
+        if(toggle.getAttribute('aria-pressed') === 'true') pause();
+        else await play();
+      });
+    
+      // Optional: auto-start right after the lock click (user gesture)
+      // If you want this, call play() from your overlay click handler, e.g.:
+      // window.addEventListener('hero-revealed', () => { play(); }, { once:true });
+    
+    })();
+    </script>     
 </body>
 </html>

@@ -275,6 +275,43 @@ footer { display: none; }
     visibility: hidden;  /* hidden but still takes up space */
   }
   
+  /* Canvas fills the viewport behind everything */
+#musicViz{
+    position: fixed;
+    inset: 0;
+    z-index: 0;              /* behind your hero content */
+    pointer-events: none;    /* clicks pass through */
+  }
+  
+  /* Little play/pause chip centered near bottom */
+  .audio-chip{
+    position: fixed;
+    left: 50%;
+    bottom: clamp(20px, 4vh, 36px);
+    transform: translateX(-50%);
+    z-index: 5;              /* above main content */
+  }
+  
+  #audioToggle{
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: 999px;
+    font: 600 14px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    box-shadow: 0 10px 20px rgba(2,6,23,.06);
+    transition: box-shadow .2s ease, transform .15s ease;
+  }
+  #audioToggle:hover{ box-shadow: 0 12px 28px rgba(2,6,23,.10); }
+  #audioToggle:active{ transform: translateY(1px); }
+  #audioToggle[aria-pressed="true"]{ background: #111827; color: #fff; border-color: transparent; }
+  
+  /* Respect reduced-motion */
+  @media (prefers-reduced-motion: reduce){
+    #musicViz{ display:none !important; }
+  }
+  
 /* fade-only lift — no vertical movement */
 .intro-overlay .sq-wrap.lift { animation: exitUp .7s cubic-bezier(.16,1,.3,1) forwards; }
 @keyframes exitUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(0); } }
