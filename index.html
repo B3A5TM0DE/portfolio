@@ -455,36 +455,33 @@
   
     let started = false;
     function startSequence(){
-      if (started) return;
-      started = true;
-  
-      if (reduce){
-        // no animations – reveal immediately
-        decodeEl.textContent = 'WELCOME';
-        revealPage();
-        return;
-      }
-  
-      // 1) decode the word
-      decodeWelcome(decodeEl, 'WELCOME').then(function(){
-        // tiny beat before spin (feels nicer)
-        setTimeout(function(){
-          // 2) spin the lock
-          // attach the post-spin handler before starting
-          sq.addEventListener('animationend', function(e){
-            if (e.animationName === 'spin360'){
-              // 3) fade the key (your .lift animation) and 4) wipe to reveal
-              wr.classList.add('lift');
-              requestAnimationFrame(revealPage);
-            }
-          }, { once:true });
-  
-          // trigger spin
-          sq.classList.add('spin');
-          if (kh) kh.classList.add('spin');
-        }, 100);
-      });
-    }
+  if (started) return;
+  started = true;
+
+  if (reduce){
+    decodeEl.textContent = 'WELCOME';
+    revealPage();
+    return;
+  }
+
+  // show the reserved line without causing layout shift
+  decodeEl.style.visibility = 'visible';
+
+  decodeWelcome(decodeEl, 'WELCOME').then(function(){
+    setTimeout(function(){
+      sq.addEventListener('animationend', function(e){
+        if (e.animationName === 'spin360'){
+          wr.classList.add('lift');
+          requestAnimationFrame(revealPage);
+        }
+      }, { once:true });
+
+      sq.classList.add('spin');
+      if (kh) kh.classList.add('spin');
+    }, 100);
+  });
+}
+
   
     // interactions
     wr.addEventListener('click', startSequence);

@@ -262,12 +262,17 @@ footer { display: none; }
   }
   
   /* The decoding word */
-  .decode-text{
+/* reserve space + hide until click */
+.decode-text{
     font: 700 14px ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     letter-spacing: .32em;
     color: #fff;
     text-transform: uppercase;
     opacity: .9;
+  
+    /* key bits */
+    min-height: 1.2em;   /* reserves one line height so layout doesn't jump */
+    visibility: hidden;  /* hidden but still takes up space */
   }
   
 /* fade-only lift — no vertical movement */
