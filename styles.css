@@ -201,6 +201,14 @@ body.no-scroll { overflow: hidden; }
   display: block;
   color: var(--muted);
   font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.location {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 .job-description {
