@@ -536,32 +536,22 @@
       if (!audio || !canvas || !chip || !toggle) return;
     
       /* ===== UI timing ===== */
-      chip.hidden = true;                                      // hide on lock
+      chip.hidden = true; // hide while the key overlay is up
       window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
-      window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true }); // start on key
+      // start music + viz exactly on lock click
+      window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
     
-      /* ===== Look & feel ===== */
-      const POINTS    = 900;    // more points = smoother line
-      const RADIUS_FR = 0.28;   // base radius (fraction of min viewport)
-      const AMP_FR    = 0.11;   // waveform displacement amount
-      const SMOOTH    = 0.94;   // per-point EMA (0..1) — higher = smoother
-      const POST_BLUR_PASSES = 2; // simple neighbor blur passes for extra silk
-    
-      const LINE_OPACITY = 0.9;
-      const LINE_THICK   = 4.5; // base thickness (px), scales with DPR
-      const LINE_GLOW    = 16;  // base glow
-    
-      // Aura: extra, fainter rings that expand slightly with bass
-      const AURA_LAYERS  = 4;
-      const AURA_GAP_FR  = 0.018; // spacing between layers (fraction of min viewport)
-      const AURA_FADE    = 0.58;  // alpha falloff per layer (0..1)
-      const BASE_RING_OP = 0.22;  // faint static ring under everything
-    
-      // Bass influence (tasteful, no “shooting”)
-      const BASS_SMOOTH  = 0.9;   // smoothing for bass envelope
-      const BASS_TO_GLOW = 10;    // adds to glow on peaks
-      const BASS_TO_GAP  = 0.5;   // scales aura spacing on peaks
-      const BASS_TO_AMP  = 0.08;  // scales waveform amplitude on peaks
+      /* ===== Look & feel knobs ===== */
+      const BINS        = 72;     // bar count around the circle (48–96 look good)
+      const RADIUS_FR   = 0.28;   // radius as fraction of min(viewport)
+      const BAR_FR      = 0.16;   // max bar length as fraction of min(viewport)
+      const DECAY       = 0.86;   // smoothing: higher = smoother/laggier
+      const BASE_RING_OP= 0.25;   // faint baseline circle opacity
+      const BAR_OPACITY = 0.80;   // bar opacity
+      const LINE_BASE   = 2.5;    // base thickness (px) – scales with DPR
+      const GLOW        = 14;     // glow (px) – scales with DPR
+      const SHAPE       = 'out';  // 'out' = grow outward, 'in' = grow inward
+      const EASING_POW  = 1.15;   // >1 softens peaks (1.0 = linear)
     
       /* ===== Canvas ===== */
       const ctx = canvas.getContext('2d');
@@ -587,119 +577,84 @@
       resize();
     
       /* ===== Audio ===== */
-      let ac=null, analyser=null, timeData=null, freqData=null;
+      let ac=null, analyser=null, freq=null;
       function ensureAudio(){
         if (ac) return;
         ac = new (window.AudioContext || window.webkitAudioContext)();
         const src  = ac.createMediaElementSource(audio);
         const gain = ac.createGain(); gain.gain.value = 0.7;
         analyser   = ac.createAnalyser();
-        analyser.fftSize = 2048; // high time resolution
-        timeData   = new Uint8Array(analyser.fftSize);
-        freqData   = new Uint8Array(analyser.frequencyBinCount);
+        analyser.fftSize = 1024;
+        freq = new Uint8Array(analyser.frequencyBinCount);
         src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
       }
     
-      function getBass(){
-        // 20–160 Hz average
-        analyser.getByteFrequencyData(freqData);
-        const ny = ac.sampleRate / 2;
-        const lo = 20, hi = 160;
-        const li = Math.max(0, Math.floor(lo / ny * freqData.length));
-        const hiI= Math.min(freqData.length-1, Math.floor(hi / ny * freqData.length));
-        let sum=0, n=0;
-        for(let i=li;i<=hiI;i++){ sum += freqData[i]; n++; }
-        return (sum / Math.max(1,n)) / 255; // 0..1
-      }
+      /* ===== Bars drawing ===== */
+      const smooth = new Float32Array(BINS).fill(0);
     
-      /* ===== Wave buffers ===== */
-      const wave = new Float32Array(POINTS).fill(0);
-      const work = new Float32Array(POINTS).fill(0); // temp for blur
+      function drawRadialBars(){
+        analyser.getByteFrequencyData(freq);
     
-      function blurOnce(src, dst){
-        // simple 1D circular box blur radius=1
-        const N = src.length;
-        for (let i=0;i<N;i++){
-          const p = (i-1+N)%N, n = (i+1)%N;
-          dst[i] = (src[p] + src[i] + src[n]) / 3;
+        // Use only lows/mids, with log-ish emphasis to the low end
+        const usable = Math.floor(freq.length * 0.70);
+        for (let i=0;i<BINS;i++){
+          const t = i/(BINS-1);
+          const bias = Math.pow(t, 1.5);                       // more resolution in bass
+          const start = Math.floor(bias * usable);
+          const end   = Math.min(usable-1, start + 2);
+          let sum=0, n=0;
+          for (let k=start;k<=end;k++){ sum += freq[k]; n++; }
+          const v = (sum / Math.max(1,n)) / 255;               // 0..1
+          smooth[i] = Math.max(smooth[i]*DECAY, v);            // hold peaks, slow fall
         }
-      }
     
-      function drawWaveAtRadius(baseR, amp, alpha, width, glowBoost){
-        // base ring
+        const minwh  = Math.min(w,h);
+        const baseR  = minwh * RADIUS_FR;
+        const maxLen = minwh * BAR_FR;
+    
+        // faint base ring
         ctx.beginPath();
         ctx.arc(cx, cy, baseR, 0, Math.PI*2);
-        ctx.lineWidth  = 1.2 * dpr;
+        ctx.lineWidth = 1.2 * dpr;
         ctx.strokeStyle = `rgba(34,211,238,${BASE_RING_OP})`;
         ctx.stroke();
     
-        // build path
-        ctx.beginPath();
-        for (let i=0;i<=POINTS;i++){
-          const j = i % POINTS;
-          const a = (j/POINTS) * Math.PI * 2;
-          const r = baseR + wave[j] * amp;
-          const x = cx + Math.cos(a)*r;
-          const y = cy + Math.sin(a)*r;
-          if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-        }
-        ctx.closePath();
-    
-        ctx.lineJoin = 'round';
-        ctx.lineCap  = 'round';
-        ctx.globalAlpha = alpha;
-        ctx.lineWidth   = width * dpr;
+        // bars
+        ctx.lineCap = 'round';
         ctx.shadowColor = 'rgba(34,211,238,0.35)';
-        ctx.shadowBlur  = (LINE_GLOW + glowBoost) * dpr;
+        ctx.shadowBlur  = GLOW * dpr;
         ctx.strokeStyle = '#22d3ee';
-        ctx.stroke();
+        ctx.globalAlpha = BAR_OPACITY;
+    
+        for (let i=0;i<BINS;i++){
+          const angle = (i/BINS) * Math.PI*2;
+          const ax = Math.cos(angle), ay = Math.sin(angle);
+          const eased = Math.pow(smooth[i], EASING_POW);
+          const len = eased * maxLen;
+          const inner = SHAPE === 'in'  ? baseR - len : baseR;
+          const outer = SHAPE === 'out' ? baseR + len : baseR;
+    
+          const x1 = cx + ax * inner, y1 = cy + ay * inner;
+          const x2 = cx + ax * outer, y2 = cy + ay * outer;
+    
+          ctx.beginPath();
+          ctx.moveTo(x1,y1);
+          ctx.lineTo(x2,y2);
+          ctx.lineWidth = (LINE_BASE + eased * 3) * dpr; // thickness breathes slightly with energy
+          ctx.stroke();
+        }
+    
         ctx.globalAlpha = 1;
         ctx.shadowBlur  = 0;
       }
     
       /* ===== Loop & controls ===== */
-      let running=false, rafId=0, bassSmooth=0;
-    
+      let running=false, rafId=0;
       function frame(){
         rafId = requestAnimationFrame(frame);
         ctx.clearRect(0,0,w,h);
         if (!running || !analyser) return;
-    
-        // read audio
-        analyser.getByteTimeDomainData(timeData);
-        const step = timeData.length / POINTS;
-    
-        // per-point EMA smoothing of waveform
-        for (let i=0;i<POINTS;i++){
-          const raw = (timeData[Math.floor(i*step)] - 128) / 128; // -1..1
-          wave[i] = wave[i]*SMOOTH + raw*(1-SMOOTH);
-        }
-    
-        // extra silk: a couple of cheap neighbor blurs
-        for(let p=0;p<POST_BLUR_PASSES;p++){
-          blurOnce(wave, work);
-          blurOnce(work, wave);
-        }
-    
-        // bass envelope
-        const b = getBass();
-        bassSmooth = bassSmooth*BASS_SMOOTH + b*(1-BASS_SMOOTH);
-    
-        const minwh = Math.min(w,h);
-        const baseR = minwh * RADIUS_FR;
-        const amp   = minwh * (AMP_FR * (1 + bassSmooth * BASS_TO_AMP));
-        const glow  = bassSmooth * BASS_TO_GLOW;
-        const gap   = minwh * (AURA_GAP_FR * (1 + bassSmooth * BASS_TO_GAP));
-    
-        // main line
-        drawWaveAtRadius(baseR, amp, LINE_OPACITY, LINE_THICK, glow);
-    
-        // aura layers (fainter, slightly offset)
-        for (let i=1;i<=AURA_LAYERS;i++){
-          const aAlpha = LINE_OPACITY * Math.pow(AURA_FADE, i);
-          const aWidth = Math.max(1.5, LINE_THICK - i*0.9);
-          drawWaveAtRadius(baseR + gap*i, amp*0.92, aAlpha, aWidth, glow*0.8);
-        }
+        drawRadialBars();
       }
     
       async function play(){
@@ -717,6 +672,7 @@
         toggle.textContent = '♫ Play';
         audio.pause();
       }
+    
       toggle.addEventListener('click', () =>
         toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
       );
