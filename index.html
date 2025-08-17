@@ -46,7 +46,7 @@
       </div>
 
       <!-- Your track (swap src with your file/URL) -->
-      <audio id="heroTrack" src="/audio/your-track.mp3" preload="auto" crossorigin="anonymous"></audio>
+      <audio id="heroTrack" src="audio/welcome.mp3" preload="auto"></audio>
     </section>
   </div>
 
@@ -636,13 +636,24 @@
       // Toggle playback
       async function play(){
         await ensureAudio();
-        if(audioCtx.state === 'suspended') await audioCtx.resume();
-        running = true;
-        toggle.setAttribute('aria-pressed','true');
-        toggle.textContent = '♫ Pause';
-        try { await audioEl.play(); } catch(e){ /* ignored */ }
-        if(!rafId) { last = performance.now(); rafId = requestAnimationFrame(loop); }
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+        try {
+          await audioEl.play(); // <-- awaits & throws if it fails (404, etc.)
+          running = true;
+          toggle.setAttribute('aria-pressed','true');
+          toggle.textContent = '♫ Pause';
+
+          if(!rafId){
+            last = performance.now();
+            rafId = requestAnimationFrame(loop);
+          }
+        } catch (e) {
+          console.error('Audio play() failed:', e);
+          alert('Could not start audio (check file path / console for details).');
+        }
       }
+
       function pause(){
         running = false;
         toggle.setAttribute('aria-pressed','false');
