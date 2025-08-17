@@ -514,7 +514,7 @@
     }
   })();
   </script>   
- <script>
+<script>
   (function setupMusic(){
     const audio   = document.getElementById('heroTrack');
     const canvas  = document.getElementById('musicViz');
@@ -522,8 +522,25 @@
     const toggle  = document.getElementById('audioToggle');
     if (!audio || !canvas || !chip || !toggle) return;
   
-    // Make sure the chip can be clicked above all layers
-    chip.style.zIndex = '10001';
+    /* ---------- show/hide control ---------- */
+    function showChip(){ chip.hidden = false; }
+    function overlayIsPresent(){
+      // overlay exists AND is not marked .hidden
+      const ov = document.querySelector('.intro-overlay');
+      return ov && !ov.classList.contains('hidden');
+    }
+  
+    // Show chip only after the overlay reveal…
+    window.addEventListener('hero-revealed', showChip, { once:true });
+  
+    // …or, if there’s no overlay (deep-link to /projects, reduced-motion, etc.), show it after DOM is ready.
+    if (document.readyState !== 'loading') {
+      if (!overlayIsPresent()) showChip();
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!overlayIsPresent()) showChip();
+      });
+    }
   
     /* ---------- Canvas ---------- */
     const ctx2d = canvas.getContext('2d');
@@ -538,8 +555,8 @@
     window.addEventListener('resize', resize);
     resize();
   
-    /* ---------- Audio graph (created after first play) ---------- */
-    let ac=null, src=null, analyser=null, data=null, raf=null, running=false;
+    /* ---------- Audio graph (init on first click) ---------- */
+    let ac=null, src=null, analyser=null, data=null, running=false, raf=null;
   
     function initGraph(){
       if (ac) return;
@@ -548,10 +565,7 @@
       const gain = ac.createGain(); gain.gain.value = 0.7;
       analyser = ac.createAnalyser(); analyser.fftSize = 1024;
       data = new Uint8Array(analyser.frequencyBinCount);
-  
-      src.connect(gain);
-      gain.connect(analyser);
-      analyser.connect(ac.destination);
+      src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
     }
   
     /* ---------- Viz loop (simple bars) ---------- */
@@ -559,7 +573,6 @@
       raf = requestAnimationFrame(loop);
       ctx2d.clearRect(0,0,w,h);
       if (!running || !analyser) return;
-  
       analyser.getByteFrequencyData(data);
   
       const bins = 24;
@@ -581,46 +594,33 @@
     }
     raf = requestAnimationFrame(loop);
   
-    function setBtn(state){
-      running = state;
-      toggle.setAttribute('aria-pressed', state ? 'true' : 'false');
-      toggle.textContent = state ? '♫ Pause' : '♫ Play';
+    function setBtn(on){
+      running = on;
+      toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      toggle.textContent = on ? '♫ Pause' : '♫ Play';
     }
   
-    // Pre-warm on gesture (helps Safari)
+    // Pre-warm on gesture for Safari
     toggle.addEventListener('pointerdown', () => {
       try { if (!ac) initGraph(); if (ac.state === 'suspended') ac.resume(); } catch {}
     });
   
     toggle.addEventListener('click', () => {
       if (toggle.getAttribute('aria-pressed') === 'true'){
-        audio.pause();
-        setBtn(false);
-        return;
+        audio.pause(); setBtn(false); return;
       }
-  
-      // Start audio ASAP on the click stack, then build graph (gesture-safe)
       const p = audio.play();
-      if (p && p.then){
-        p.then(() => {
-          try {
-            initGraph();
-            if (ac.state === 'suspended') ac.resume();
-          } catch (e) { console.warn('Viz init failed:', e); }
-          setBtn(true);
-        }).catch(err => {
-          console.error('play() blocked:', err);
-          alert('Could not start audio. Confirm audio/welcome.mp3 exists (try adding controls to the <audio> tag temporarily).');
-        });
-      } else {
-        // Older browsers
-        try { initGraph(); if (ac.state === 'suspended') ac.resume(); } catch {}
+      (p?.then ? p : Promise.resolve()).then(() => {
+        initGraph();
+        if (ac.state === 'suspended') ac.resume();
         setBtn(true);
-      }
+      }).catch(err => {
+        console.error('play() blocked:', err);
+        alert('Could not start audio. Ensure audio/welcome.mp3 is being served and not blocked by CORS.');
+      });
     });
   
     audio.addEventListener('ended', () => setBtn(false));
-    audio.addEventListener('error', () => console.error('Audio error:', audio.error));
   })();
   </script>  
 </body>
