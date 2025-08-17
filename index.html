@@ -534,21 +534,23 @@
     const toggle = document.getElementById('audioToggle');
     if (!audio || !canvas || !chip || !toggle) return;
   
-    // Show chip after the wipe; start viz+music on lock click
+    // Show the chip after the wipe; auto-start on lock click (keep if you want)
     chip.hidden = true;
     window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
     window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
   
-    /* ===== Look & feel (tweak here) ===== */
-    const BINS        = 144;   // number of bars around the ring
-    const RADIUS_FR   = 0.28;  // base radius as fraction of min(viewport)
-    const BAR_FR      = 0.14;  // max extra length as fraction of min(viewport) (lower = less “reach”)
-    const DECAY       = 0.90;  // EMA smoothing (higher = smoother)
-    const GAMMA       = 0.65;  // <1 compresses peaks (0.5–0.8 good); lowers contrast
-    const BLUR_NEIGH  = 0.30;  // 0..0.5 extra neighbor smoothing
-    const TOUCH_FR    = 0.95;  // bar thickness vs spacing (closer to 1 = thicker/closer)
-    const GLOW        = 16;    // px glow (auto scales with DPR)
-    const ROTATE_SPEED= 0.00;  // revolutions per second (set 0 to stop)
+    /* ===== Look & feel ===== */
+    const COLOR       = '#444B56'; // 👈 set your color here (hex)
+    const BINS        = 144;
+    const RADIUS_FR   = 0.28;   // base radius (fraction of min viewport)
+    const BAR_FR      = 0.12;   // max extra length (lower = less reach)
+    const MIN_FR      = 0.02;   // 👈 minimum length so bars never vanish
+    const DECAY       = 0.90;   // EMA smoothing
+    const GAMMA       = 0.70;   // <1 compresses peaks (0.5–0.8 good)
+    const BLUR_NEIGH  = 0.30;   // neighbor smoothing (0..0.5)
+    const TOUCH_FR    = 0.96;   // thickness; closer to 1 = bars nearly touch
+    const GLOW        = 16;     // px glow (auto-scales with DPR)
+    const ROTATE_SPEED= 0.08;   // revs per second (0 to stop spinning)
   
     /* ===== Canvas ===== */
     const ctx = canvas.getContext('2d');
@@ -573,6 +575,16 @@
     window.addEventListener('name-shown', updateCenter, { once:true });
     resize();
   
+    /* ===== Color helpers ===== */
+    function hexToRGB(hex){
+      let s = hex.replace('#','');
+      if (s.length === 3) s = s.split('').map(c=>c+c).join('');
+      const n = parseInt(s, 16);
+      return [(n>>16)&255, (n>>8)&255, n&255];
+    }
+    const [CR,CG,CB] = hexToRGB(COLOR);
+    const rgba = (a)=>`rgba(${CR},${CG},${CB},${a})`;
+  
     /* ===== Audio ===== */
     let ac=null, analyser=null, freq=null;
     function ensureAudio(){
@@ -586,61 +598,59 @@
     }
   
     /* ===== Bars (no spread; linear mapping) ===== */
-    const smooth = new Float32Array(BINS).fill(0);
+    const smooth = new Float32Array(BINS).fill(0.12); // 👈 seeded so it doesn’t start empty
     const tmp    = new Float32Array(BINS).fill(0);
   
     function drawRadialBars(angleOffset){
       analyser.getByteFrequencyData(freq);
   
-      const usable = Math.floor(freq.length * 0.70); // stick to lows/mids
-      // map each bar to a linear slice of the spectrum
+      const usable = Math.floor(freq.length * 0.70);
       for (let i = 0; i < BINS; i++) {
         const idx = Math.min(usable - 1, Math.floor(i * (usable / BINS)));
-        const v   = freq[idx] / 255;                    // 0..1
-        // EMA smoothing (both up & down)
-        smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);
+        const v   = freq[idx] / 255;                           // 0..1
+        smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);       // EMA
       }
   
-      // optional quick neighbor blur to reduce jaggedness further
       if (BLUR_NEIGH > 0) {
         for (let i = 0; i < BINS; i++) {
           const im1 = (i - 1 + BINS) % BINS;
           const ip1 = (i + 1) % BINS;
-          tmp[i] = (smooth[i]*(1-2*BLUR_NEIGH)) + (smooth[im1] + smooth[ip1]) * (BLUR_NEIGH);
+          tmp[i] = (smooth[i]*(1-2*BLUR_NEIGH)) + (smooth[im1] + smooth[ip1]) * BLUR_NEIGH;
         }
         smooth.set(tmp);
       }
   
-      const minwh  = Math.min(w,h);
-      const baseR  = minwh * RADIUS_FR;
-      const maxLen = minwh * BAR_FR;
+      const minwh   = Math.min(w,h);
+      const baseR   = minwh * RADIUS_FR;
+      const maxLen  = minwh * BAR_FR;
+      const minLen  = minwh * MIN_FR; // 👈 minimum visible length
   
-      // thickness so bars nearly touch
+      // bar thickness so they nearly touch
       const arcPerBin = (2 * Math.PI * baseR) / BINS;
       const lineW     = Math.max(2*dpr, arcPerBin * TOUCH_FR);
   
       ctx.lineCap = 'round';
-      ctx.shadowColor = 'rgba(34,211,238,0.35)';
+      ctx.shadowColor = rgba(0.35);
       ctx.shadowBlur  = GLOW * dpr;
   
       for (let i=0;i<BINS;i++){
         const angle = angleOffset + (i / BINS) * Math.PI * 2;
         const ax = Math.cos(angle), ay = Math.sin(angle);
   
-        // compress dynamic range
+        // compress peaks, then add minimum length
         const eased = Math.pow(smooth[i], GAMMA);
-        const len   = eased * maxLen;
+        const len   = minLen + eased * (maxLen - minLen);
   
         const x1 = cx + ax * baseR;
         const y1 = cy + ay * baseR;
         const x2 = cx + ax * (baseR + len);
         const y2 = cy + ay * (baseR + len);
   
-        // transparent at base -> no visible inner circle
+        // transparent at base -> no inner circle ring
         const g = ctx.createLinearGradient(x1,y1,x2,y2);
-        g.addColorStop(0.00, 'rgba(34,211,238,0.00)');
-        g.addColorStop(0.35, 'rgba(34,211,238,0.55)');
-        g.addColorStop(1.00, 'rgba(34,211,238,1.00)');
+        g.addColorStop(0.00, rgba(0.00));
+        g.addColorStop(0.35, rgba(0.55));
+        g.addColorStop(1.00, rgba(1.00));
   
         ctx.strokeStyle = g;
         ctx.lineWidth   = lineW;
@@ -661,8 +671,7 @@
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
   
-      // spin
-      angleOffset += ROTATE_SPEED * dt * Math.PI * 2;
+      angleOffset += ROTATE_SPEED * dt * Math.PI * 2; // spin
   
       rafId = requestAnimationFrame(frame);
       ctx.clearRect(0,0,w,h);
@@ -689,7 +698,6 @@
       toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
     );
   })();
-  </script>
-  
+  </script>  
 </body>    
 </html>
