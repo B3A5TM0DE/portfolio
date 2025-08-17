@@ -548,6 +548,12 @@
     const ACTIVE_GAIN = 0.7;     // normal listening level
     const IDLE_GAIN   = 0.0005;  // "paused" level (almost silent)
     const FADE_MS     = 0.35;    // fade time in seconds
+        // Frequency shaping (visual only)
+    const LOW_CUT_HZ = 60;      // ignore sub-bass thump/DC
+    const HIGH_CUT_HZ = 12000;  // cap highs (less noisy)
+    const LOG_EXP     = 1.7;    // 1 = linear, higher = more low-end compression
+    const EQ_TILT     = 0.6;    // 0..1 — more -> boosts highs visually
+
 
   
     /* ===== Canvas ===== */
@@ -608,14 +614,32 @@
     function drawRadialBars(){
       analyser.getByteFrequencyData(freq);
   
-      const usable = Math.floor(freq.length * 0.70); // lows/mids
+      // --- pick bins with low-cut + log mapping + gentle high tilt ---
+      const binHz   = ac.sampleRate / analyser.fftSize;
+      const start   = Math.max(1, Math.floor(LOW_CUT_HZ  / binHz));
+      const end     = Math.min(freq.length - 1, Math.floor(HIGH_CUT_HZ / binHz));
+      const span    = Math.max(1, end - start);
+
       for (let i = 0; i < BINS; i++) {
-        // contiguous freqs → contiguous bars (no spread)
-        const idx = Math.min(usable - 1, Math.floor(i * (usable / BINS)));
-        const v = freq[idx] / 255;
-        // time smoothing only (no neighbor blending)
+        // log-ish distribution across usable band
+        const t   = i / (BINS - 1);                 // 0..1 around ring
+        const u   = Math.pow(t, LOG_EXP);           // bias away from bass
+        const idx = start + Math.min(span - 1, Math.floor(u * span));
+
+        // small neighbor average to avoid a single spike
+        const i0 = Math.max(start, idx - 1);
+        const i1 = idx;
+        const i2 = Math.min(end,   idx + 1);
+        let v = (freq[i0] + freq[i1] + freq[i2]) / (3 * 255);
+
+        // gentle high-frequency visual boost
+        const hi = (idx - start) / span;            // 0..1 low→high
+        v *= (0.7 + 0.3 * Math.pow(hi, EQ_TILT));   // keep <= ~1
+
+        // time smoothing you already had
         smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);
       }
+
   
       const minwh  = Math.min(w,h);
       const baseR  = minwh * RADIUS_FR;
