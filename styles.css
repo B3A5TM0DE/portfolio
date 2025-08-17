@@ -98,6 +98,323 @@ body.no-scroll { overflow: hidden; }
 .bullets { margin: 0; padding-left: 18px; color: #111827; }
 .bullets li { margin: 6px 0; line-height: 1.6; }
 .project-media { border: 1px dashed var(--line); background: #fff; border-radius: 12px; display: grid; place-items: center; min-height: 260px; }
+
+/* ===== About Page ===== */
+.about-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.about-text p {
+  margin: 0 0 24px 0;
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 1.1rem;
+}
+
+.about-highlights {
+  display: grid;
+  gap: 24px;
+}
+
+.highlight-item {
+  background: var(--bgSubtle);
+  padding: 24px;
+  border-radius: var(--cardRadius);
+  border: 1px solid var(--line);
+}
+
+.highlight-item h3 {
+  margin: 0 0 12px 0;
+  color: var(--ink);
+  font-size: 1.2rem;
+}
+
+.highlight-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ===== Experience Page ===== */
+.timeline {
+  position: relative;
+  max-width: 800px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--line);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 48px;
+  padding-left: 60px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  background: var(--neon);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px var(--neon);
+}
+
+.timeline-content {
+  background: white;
+  padding: 32px;
+  border-radius: var(--cardRadius);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 20px rgba(2,6,23,.06);
+}
+
+.job-header {
+  margin-bottom: 20px;
+}
+
+.job-header h3 {
+  margin: 0 0 8px 0;
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.company {
+  display: block;
+  color: var(--neon);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.period {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.job-description {
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.achievements {
+  margin: 0 0 20px 0;
+  padding-left: 20px;
+  color: var(--ink);
+}
+
+.achievements li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tech-tag {
+  background: var(--bgSubtle);
+  color: var(--ink);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid var(--line);
+}
+
+/* ===== Skills Page ===== */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+}
+
+.skill-category h3 {
+  margin: 0 0 24px 0;
+  color: var(--ink);
+  font-size: 1.3rem;
+}
+
+.skill-items {
+  display: grid;
+  gap: 20px;
+}
+
+.skill-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.skill-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.skill-bar {
+  height: 8px;
+  background: var(--bgSubtle);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.skill-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon), #2563eb);
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+/* ===== Contact Page ===== */
+.contact-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.contact-info h3 {
+  margin: 0 0 20px 0;
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.contact-info p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.contact-methods {
+  display: grid;
+  gap: 24px;
+}
+
+.contact-method {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bgSubtle);
+  border-radius: var(--cardRadius);
+  border: 1px solid var(--line);
+}
+
+.contact-icon {
+  font-size: 1.5rem;
+}
+
+.contact-method h4 {
+  margin: 0 0 4px 0;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.contact-method a {
+  color: var(--neon);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-method a:hover {
+  text-decoration: underline;
+}
+
+.contact-form h3 {
+  margin: 0 0 24px 0;
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--neon);
+}
+
+.submit-btn {
+  background: var(--neon);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+  background: #06a6c4;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+  .about-content,
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .skill-item {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .timeline-item {
+    padding-left: 40px;
+  }
+  
+  .timeline::before {
+    left: 15px;
+  }
+  
+  .timeline-marker {
+    left: 6px;
+  }
+}
 .project-media span { opacity: .6; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
 footer { display: none; }
 
