@@ -419,6 +419,8 @@
     var wr  = overlay.querySelector('.sq-wrap');
     var wipe = overlay.querySelector('.white-wipe');
     var decodeEl = overlay.querySelector('#decodeText');
+
+    var introText = document.querySelector('.home-page #intro .intro-text');
   
     function revealPage(){
   overlay.classList.add('revealing');
@@ -686,10 +688,17 @@
   }
 
   function showChip(){ chip.hidden = false; updateCenter(); }
-  window.addEventListener('hero-revealed', showChip, { once:true });
+
+window.addEventListener('hero-revealed', showChip, { once:true });
+
+// Fallback: show even if the overlay was skipped or if DOMContentLoaded already fired
+if (document.readyState !== 'loading') {
+  setTimeout(()=>{ if (chip.hidden) showChip(); }, 400);
+} else {
   document.addEventListener('DOMContentLoaded', ()=> {
-    setTimeout(()=>{ if(chip.hidden) showChip(); }, 600);
+    setTimeout(()=>{ if (chip.hidden) showChip(); }, 400);
   });
+}
 
   toggle.addEventListener('click', async ()=>{
     if(toggle.getAttribute('aria-pressed') === 'true') pause();
