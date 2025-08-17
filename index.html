@@ -535,31 +535,27 @@
     const toggle = document.getElementById('audioToggle');
     if (!audio || !canvas || !chip || !toggle) return;
   
-    // Show control only after the overlay unlocks
-    chip.hidden = true;
-    function showChip(){ chip.hidden = false; }
-    window.addEventListener('hero-revealed', showChip, { once:true });
-  // start music + viz exactly on lock click
-    window.addEventListener('hero-unlocked', () => {
-      play().catch(()=>{ /* ignored; browser will show the chip anyway */ });
-    }, { once:true });
-
-    /* ========= Visual config ========= */
-    // effect type
-    const EFFECT     = 'radial'; // <— circular spectrum
-    // look/feel knobs
-    const BINS       = 48;       // number of bars around the circle
-    const RADIUS_FR  = 0.28;     // base radius as fraction of min(viewport)
-    const BAR_FR     = 0.12;     // max bar length as fraction of min(viewport)
-    const DECAY      = 0.82;     // smoothing (higher = smoother)
-    const OPACITY    = 0.55;     // 0..1 lines opacity
-    const BASE_RING  = 0.25;     // 0..1 faint ring opacity
-    const LINE_BASE  = 2;        // px (auto scaled by DPR)
-    const SHAPE      = 'out';    // 'out' (grow outward) or 'in'
+    /* ===== UI timing ===== */
+    chip.hidden = true; // keep hidden on lock page
+    window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
+    // start music+viz exactly on lock click (user gesture = autoplay ok)
+    window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
   
-    /* ========= Canvas ========= */
+    /* ===== Visual config (circular waveform) ===== */
+    const EFFECT    = 'wave';
+    const POINTS    = 540;   // more points = smoother circle (perf cost)
+    const RADIUS_FR = 0.28;  // base radius as fraction of min(viewport)
+    const AMP_FR    = 0.10;  // wave displacement amount
+    const SMOOTH    = 0.92;  // 0..1 EMA smoothing (higher = smoother)
+    const OPACITY   = 0.85;  // stroke opacity
+    const THICKNESS = 3.0;   // px (scales with DPR)
+    const GLOW      = 8;     // shadowBlur (0 = off)
+    const BASE_RING_OPACITY = 0.22;
+  
+    /* ===== Canvas ===== */
     const ctx = canvas.getContext('2d');
     let w=0, h=0, dpr=1, cx=0, cy=0;
+  
     function updateCenter(){
       const t = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
       const r = t.getBoundingClientRect();
@@ -576,84 +572,83 @@
     }
     window.addEventListener('resize', resize);
     window.addEventListener('hero-revealed', updateCenter);
-    window.addEventListener('name-shown', updateCenter, { once: true });
+    window.addEventListener('name-shown', updateCenter, { once:true });
     resize();
   
-    /* ========= Audio (lazy init) ========= */
-    let ac=null, analyser=null, data=null;
+    /* ===== Audio (lazy init) ===== */
+    let ac=null, analyser=null, timeData=null;
     function ensureAudio(){
       if (ac) return;
       ac = new (window.AudioContext || window.webkitAudioContext)();
       const src  = ac.createMediaElementSource(audio);
       const gain = ac.createGain(); gain.gain.value = 0.7;
-      analyser   = ac.createAnalyser(); analyser.fftSize = 1024;
-      data       = new Uint8Array(analyser.frequencyBinCount);
+      analyser   = ac.createAnalyser();
+      analyser.fftSize = 2048;                 // high time-domain resolution
+      timeData   = new Uint8Array(analyser.fftSize);
       src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
     }
   
-    /* ========= Radial spectrum ========= */
-    const smooth = new Float32Array(BINS).fill(0);
-    function drawRadialSpectrum(){
-      if (!analyser) return;
-      analyser.getByteFrequencyData(data);
+    /* ===== Circular waveform ===== */
+    const smoothVals = new Float32Array(POINTS).fill(0);
   
-      const usable = Math.floor(data.length * 0.70);   // focus on lows/mids
-      // update smoothed bins (log-ish distribution toward lows)
-      for (let i=0; i<BINS; i++){
-        const t = i/(BINS-1);
-        const a = Math.pow(t, 1.5);                    // bias toward lows
-        const start = Math.floor(a * usable);
-        const end   = Math.min(usable-1, start + 2);
-        let sum=0, count=0;
-        for (let k=start; k<=end; k++){ sum += data[k]; count++; }
-        const v = (sum / Math.max(1,count)) / 255;     // 0..1
-        // smooth with decay (hold peaks, fall slowly)
-        smooth[i] = Math.max(smooth[i]*DECAY, v);
+    function drawCircularWave(){
+      if (!analyser || !timeData) return;
+  
+      // read oscilloscope waveform (0..255 around baseline ~128)
+      analyser.getByteTimeDomainData(timeData);
+  
+      // resample to POINTS with stride + smooth via EMA
+      const step = timeData.length / POINTS;
+      for (let i=0; i<POINTS; i++){
+        const raw = (timeData[Math.floor(i*step)] - 128) / 128; // -1..1
+        smoothVals[i] = smoothVals[i]*SMOOTH + raw*(1-SMOOTH);
       }
   
-      const minwh  = Math.min(w,h);
-      const baseR  = minwh * RADIUS_FR;
-      const maxLen = minwh * BAR_FR;
+      const minwh = Math.min(w,h);
+      const baseR = minwh * RADIUS_FR;
+      const amp   = minwh * AMP_FR;
   
       // faint base ring
       ctx.beginPath();
       ctx.arc(cx, cy, baseR, 0, Math.PI*2);
       ctx.lineWidth = 1.2 * dpr;
-      ctx.strokeStyle = `rgba(34,211,238,${BASE_RING})`;
+      ctx.strokeStyle = `rgba(34,211,238,${BASE_RING_OPACITY})`;
       ctx.stroke();
   
-      // bars
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#22d3ee';
-      ctx.globalAlpha = OPACITY;
-  
-      for (let i=0; i<BINS; i++){
-        const angle = (i/BINS) * Math.PI*2;
-        const ax = Math.cos(angle), ay = Math.sin(angle);
-        const len = smooth[i] * maxLen;
-        const inner = SHAPE === 'in'  ? baseR - len : baseR;
-        const outer = SHAPE === 'out' ? baseR + len : baseR;
-        const x1 = cx + ax * inner, y1 = cy + ay * inner;
-        const x2 = cx + ax * outer, y2 = cy + ay * outer;
-  
-        ctx.beginPath();
-        ctx.moveTo(x1,y1);
-        ctx.lineTo(x2,y2);
-        ctx.lineWidth = (LINE_BASE + smooth[i]*2) * dpr;
-        ctx.stroke();
+      // waveform path
+      ctx.beginPath();
+      for (let i=0; i<=POINTS; i++){
+        const j = i % POINTS;
+        const a = (j / POINTS) * Math.PI * 2;
+        const r = baseR + smoothVals[j] * amp;
+        const x = cx + Math.cos(a) * r;
+        const y = cy + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else         ctx.lineTo(x, y);
       }
+      ctx.closePath();
+  
+      ctx.lineJoin = 'round';
+      ctx.lineCap  = 'round';
+      ctx.lineWidth = THICKNESS * dpr;
+      ctx.globalAlpha = OPACITY;
+      if (GLOW > 0){
+        ctx.shadowColor = 'rgba(34,211,238,0.35)';
+        ctx.shadowBlur  = GLOW * dpr;
+      }
+      ctx.strokeStyle = '#22d3ee';
+      ctx.stroke();
       ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
     }
   
-    /* ========= Loop & controls ========= */
-    let running=false, rafId=0, last=performance.now();
-    function frame(now){
+    /* ===== Loop & controls ===== */
+    let running=false, rafId=0;
+    function frame(){
       rafId = requestAnimationFrame(frame);
       ctx.clearRect(0,0,w,h);
       if (!running) return;
-      // (dt kept if you later add time-based effects)
-      last = now;
-      if (EFFECT === 'radial') drawRadialSpectrum();
+      if (EFFECT === 'wave') drawCircularWave();
     }
   
     async function play(){
@@ -663,7 +658,7 @@
       running = true;
       toggle.setAttribute('aria-pressed','true');
       toggle.textContent = '♫ Pause';
-      if (!rafId){ last = performance.now(); rafId = requestAnimationFrame(frame); }
+      if (!rafId) rafId = requestAnimationFrame(frame);
     }
     function pause(){
       running = false;
@@ -671,13 +666,11 @@
       toggle.textContent = '♫ Play';
       audio.pause();
     }
+  
     toggle.addEventListener('click', () =>
       toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
     );
-  
-    // OPTIONAL: start automatically when the lock is clicked/unlocks
-    // window.addEventListener('hero-revealed', () => { play().catch(()=>{}); }, { once:true });
   })();
-  </script>  
-  </body>
+  </script>
+    </body>
 </html>
