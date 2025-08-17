@@ -386,63 +386,118 @@
   }
 </script>
 <script>
-  /* Minimal key-only overlay */
-  (function(){
+  /* Key-only overlay with WELCOME decode -> spin -> wipe */
+  (function () {
+    // If user deep-links to projects, skip overlay entirely (same behavior you had)
     if ((location.hash || '#/home') === '#/projects') return;
   
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   
+    // Build overlay DOM (adds the decode text under the square)
     var overlay = document.createElement('div');
     overlay.className = 'intro-overlay';
     overlay.innerHTML =
-      '<div class="sq-wrap" tabindex="0" role="button" aria-label="Enter site">'+
-        '<div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div>'+
-      '</div>'+
+      '<div class="sq-wrap" tabindex="0" role="button" aria-label="Enter site">' +
+        '<div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div>' +
+        '<div class="decode-text" id="decodeText" aria-live="polite"></div>' +
+      '</div>' +
       '<div class="white-wipe" aria-hidden="true"></div>';
     document.body.appendChild(overlay);
   
     var sq  = overlay.querySelector('.square');
     var kh  = overlay.querySelector('.keyhole');
     var wr  = overlay.querySelector('.sq-wrap');
-    var introText = document.querySelector('.home-page #intro .intro-text');
+    var wipe = overlay.querySelector('.white-wipe');
+    var decodeEl = overlay.querySelector('#decodeText');
   
     function revealPage(){
       overlay.classList.add('revealing');
-      var wipe = overlay.querySelector('.white-wipe');
-      if (wipe){
-        requestAnimationFrame(function(){ wipe.style.transform = 'translateY(0%)'; });
-        wipe.addEventListener('transitionend', function(){
-          overlay.classList.add('hidden');
-          if (introText) introText.classList.add('show');
-          window.dispatchEvent(new Event('hero-revealed'));
-        }, { once:true });
-      } else {
+      // kick the wipe
+      requestAnimationFrame(function(){
+        wipe.style.transform = 'translateY(0%)';
+      });
+      wipe.addEventListener('transitionend', function(){
         overlay.classList.add('hidden');
-        if (introText) introText.classList.add('show');
+        // let the rest of the page know the hero can start animating
         window.dispatchEvent(new Event('hero-revealed'));
-      }
+      }, { once:true });
     }
   
-    function start(){
-      if (reduce) { revealPage(); return; }
-      sq.addEventListener('animationend', function(e){
-      if (e.animationName === 'spin360'){
-        wr.classList.add('lift');            // fade the key out
-        requestAnimationFrame(revealPage);   // kick the white wipe immediately
-      }
-}, { once:true });
-
-      sq.classList.add('spin');
-      kh && kh.classList.add('spin');
+    // Simple decode animation: WELCOME unscrambles from random chars
+    function decodeWelcome(el, word){
+      return new Promise(function(resolve){
+        var target = (word || 'WELCOME').toUpperCase();
+        var len = target.length;
+        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*?';
+        function rnd(){ return chars[(Math.random() * chars.length) | 0]; }
+  
+        var start = null, duration = 900; // ms
+        function step(ts){
+          if (start == null) start = ts;
+          var p = Math.min(1, (ts - start) / duration);
+          var revealCount = Math.floor(p * len);
+          var out = '';
+          for (var i=0; i<len; i++){
+            out += (i < revealCount) ? target[i] : rnd();
+          }
+          el.textContent = out;
+          if (p < 1) requestAnimationFrame(step);
+          else {
+            el.textContent = target;
+            resolve();
+          }
+        }
+        // set initial scrambled string so screen readers get something stable
+        el.textContent = Array(len).fill('·').join('');
+        requestAnimationFrame(step);
+      });
     }
   
-    wr.addEventListener('click', start);
+    let started = false;
+    function startSequence(){
+      if (started) return;
+      started = true;
+  
+      if (reduce){
+        // no animations – reveal immediately
+        decodeEl.textContent = 'WELCOME';
+        revealPage();
+        return;
+      }
+  
+      // 1) decode the word
+      decodeWelcome(decodeEl, 'WELCOME').then(function(){
+        // tiny beat before spin (feels nicer)
+        setTimeout(function(){
+          // 2) spin the lock
+          // attach the post-spin handler before starting
+          sq.addEventListener('animationend', function(e){
+            if (e.animationName === 'spin360'){
+              // 3) fade the key (your .lift animation) and 4) wipe to reveal
+              wr.classList.add('lift');
+              requestAnimationFrame(revealPage);
+            }
+          }, { once:true });
+  
+          // trigger spin
+          sq.classList.add('spin');
+          if (kh) kh.classList.add('spin');
+        }, 100);
+      });
+    }
+  
+    // interactions
+    wr.addEventListener('click', startSequence);
     wr.addEventListener('keydown', function(e){
-      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); start(); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startSequence(); }
     });
   
-    if (reduce) revealPage();
+    // if reduced motion is set at load, just show page
+    if (reduce) {
+      decodeEl.textContent = 'WELCOME';
+      revealPage();
+    }
   })();
-  </script>  
+  </script>    
 </body>
 </html>

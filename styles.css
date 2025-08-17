@@ -253,6 +253,23 @@ footer { display: none; }
   /* stack everything so the key doesn’t shift when the wipe appears */
 .intro-overlay > * { grid-area: 1 / 1; }
 
+/* Stack the lock and the decode text vertically */
+.intro-overlay .sq-wrap{
+    display: flex;              /* override previous grid */
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* The decoding word */
+  .decode-text{
+    font: 700 14px ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    letter-spacing: .32em;
+    color: #fff;
+    text-transform: uppercase;
+    opacity: .9;
+  }
+  
 /* fade-only lift — no vertical movement */
 .intro-overlay .sq-wrap.lift { animation: exitUp .7s cubic-bezier(.16,1,.3,1) forwards; }
 @keyframes exitUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(0); } }
