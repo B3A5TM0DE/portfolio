@@ -411,17 +411,23 @@
     var decodeEl = overlay.querySelector('#decodeText');
   
     function revealPage(){
-      overlay.classList.add('revealing');
-      // kick the wipe
-      requestAnimationFrame(function(){
-        wipe.style.transform = 'translateY(0%)';
-      });
-      wipe.addEventListener('transitionend', function(){
-        overlay.classList.add('hidden');
-        // let the rest of the page know the hero can start animating
-        window.dispatchEvent(new Event('hero-revealed'));
-      }, { once:true });
-    }
+  overlay.classList.add('revealing');
+  const wipe = overlay.querySelector('.white-wipe');
+
+  const finish = () => {
+    overlay.classList.add('hidden');
+    if (introText) introText.classList.add('show');     // <-- unhide intro block
+    window.dispatchEvent(new Event('hero-revealed'));   // <-- kick the typewriter
+  };
+
+  if (wipe){
+    requestAnimationFrame(()=> { wipe.style.transform = 'translateY(0%)'; });
+    wipe.addEventListener('transitionend', finish, { once:true });
+  } else {
+    finish();
+  }
+}
+
   
     // Simple decode animation: WELCOME unscrambles from random chars
     function decodeWelcome(el, word){
