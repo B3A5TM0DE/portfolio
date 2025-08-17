@@ -275,25 +275,8 @@ footer { display: none; }
     visibility: hidden;  /* hidden but still takes up space */
   }
   
-  /* Canvas fills the viewport behind everything */
-  #musicViz{
-    position: fixed;
-    inset: 0;
-    z-index: 0;           /* behind content */
-    pointer-events: none; /* don’t block clicks */
-    opacity: .18;
-    filter: blur(0.3px);
-  }
-  
-  
-  /* Little play/pause chip centered near bottom */
-  .audio-chip{
-    position: fixed;
-    left: 50%;
-    bottom: clamp(20px, 4vh, 36px);
-    transform: translateX(-50%);
-    z-index: 5;              /* above main content */
-  }
+  #musicViz { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .audio-chip { position: fixed; left: 50%; transform: translateX(-50%); z-index: 10001; }  
   
   #audioToggle{
     appearance: none;
