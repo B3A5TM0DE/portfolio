@@ -418,6 +418,9 @@
     var sq  = overlay.querySelector('.square');
     var kh  = overlay.querySelector('.keyhole');
     var wr  = overlay.querySelector('.sq-wrap');
+    wr.addEventListener('pointerdown', () => {
+      window.__startSiteAudio?.();   // defined in setupMusic below
+    }, { once: true });
     var wipe = overlay.querySelector('.white-wipe');
     var decodeEl = overlay.querySelector('#decodeText');
 
@@ -566,16 +569,22 @@
     resize();
   
     /* ===== Audio ===== */
-    let ac=null, analyser=null, freq=null;
+    let ac=null, analyser=null, freq=null, gainNode=null;
+
     function ensureAudio(){
       if (ac) return;
       ac = new (window.AudioContext || window.webkitAudioContext)();
       const src  = ac.createMediaElementSource(audio);
-      const gain = ac.createGain(); gain.gain.value = 0.7;
+      gainNode   = ac.createGain();
+      gainNode.gain.value = 0.0001;                 // start silent (so we can fade in)
       analyser   = ac.createAnalyser(); analyser.fftSize = 1024;
       freq       = new Uint8Array(analyser.frequencyBinCount);
-      src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
+
+      src.connect(gainNode);
+      gainNode.connect(analyser);
+      analyser.connect(ac.destination);
     }
+
   
     /* ===== Bars (no neighbor blur) ===== */
     const smooth = new Float32Array(BINS).fill(0.18); // seed so all bars start visible
@@ -661,11 +670,19 @@
       ensureAudio();
       if (ac.state === 'suspended') await ac.resume();
       await audio.play();
+
+      // quick, smooth fade-in (≈350ms)
+      const now = ac.currentTime;
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(Math.max(0.0001, gainNode.gain.value), now);
+      gainNode.gain.exponentialRampToValueAtTime(0.7, now + 0.35);
+
       running = true;
       toggle.setAttribute('aria-pressed','true');
       toggle.textContent = '♫ Pause';
       if (!rafId) rafId = requestAnimationFrame(frame);
     }
+
     function pause(){
       running = false;
       toggle.setAttribute('aria-pressed','false');
@@ -675,6 +692,9 @@
     toggle.addEventListener('click', () =>
       toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
     );
+
+    window.__startSiteAudio = () => { play().catch(()=>{}); };
+    
   })();
   </script>  
 </body>    
