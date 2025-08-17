@@ -535,19 +535,22 @@
       const toggle = document.getElementById('audioToggle');
       if (!audio || !canvas || !chip || !toggle) return;
     
-      // Show the chip after the wipe; auto-start on lock click
+      /* ===== Show chip after wipe; auto-start on lock ===== */
       chip.hidden = true;
       window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
-      window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
     
       /* ===== Look & feel ===== */
-      const BINS       = 144;   // more bars = smoother circle
+      const BINS       = 180;   // more bars = smoother ring
       const RADIUS_FR  = 0.28;  // base radius (fraction of min viewport)
-      const BAR_FR     = 0.18;  // max bar length (fraction of min viewport)
+      const BAR_FR     = 0.20;  // max bar length (fraction of min viewport)
       const DECAY      = 0.90;  // smoothing (higher = smoother)
-      const TOUCH_FR   = 0.92;  // 0..1: how much of the arc length a bar uses (close to touching)
-      const GLOW       = 16;    // glow in px (auto-scales with DPR)
+      const TOUCH_FR   = 0.96;  // how much of arc each bar fills (near-touching)
+      const GLOW       = 16;    // glow in px (scales with DPR)
       const EASING_POW = 1.15;  // >1 softens peaks
+      const BIAS       = 1.20;  // 1.0 linear, >1 biases toward bass
+      const STRIDE     = 7;     // spreads frequencies around ring (odd number)
+      const ROTATE_SPEED = 0.10; // revolutions per second
+      const SMOOTH_MODE = 'ema'; // 'ema' (up/down) | 'peak' (hold peaks)
     
       /* ===== Canvas ===== */
       const ctx = canvas.getContext('2d');
@@ -587,32 +590,42 @@
       /* ===== Bars drawing ===== */
       const smooth = new Float32Array(BINS).fill(0);
     
-      function drawRadialBars(){
+      function drawRadialBars(angleOffset){
         analyser.getByteFrequencyData(freq);
     
-        // focus on lows/mids with a low-end bias for nicer motion
         const usable = Math.floor(freq.length * 0.70);
-        for (let i=0;i<BINS;i++){
-          const t = i/(BINS-1);
-          const idx = Math.min(usable-1, Math.floor(Math.pow(t, 1.5) * usable));
-          const v = freq[idx] / 255;                    // 0..1
-          smooth[i] = Math.max(smooth[i]*DECAY, v);     // peak-hold, slow fall
+        for (let i = 0; i < BINS; i++) {
+          const t = i / (BINS - 1);
+    
+          // 1) pick a bin with optional bass bias
+          let idx = Math.floor(Math.pow(t, BIAS) * usable);
+    
+          // 2) spread that band around the circle so neighbors aren't adjacent freqs
+          idx = (idx * STRIDE) % usable;
+    
+          // 3) normalize + smooth
+          const v = freq[idx] / 255;
+          if (SMOOTH_MODE === 'ema') {
+            smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);
+          } else {
+            smooth[i] = Math.max(smooth[i] * DECAY, v);
+          }
         }
     
         const minwh  = Math.min(w,h);
         const baseR  = minwh * RADIUS_FR;
         const maxLen = minwh * BAR_FR;
     
-        // compute thickness so bars nearly touch
-        const arcPerBin = (2 * Math.PI * baseR) / BINS;       // pixels of circumference per bar
+        // thickness so bars nearly touch
+        const arcPerBin = (2 * Math.PI * baseR) / BINS;
         const lineW     = Math.max(2*dpr, arcPerBin * TOUCH_FR);
     
-        ctx.lineCap = 'round';                                 // rounded OUTER ends
+        ctx.lineCap = 'round';
         ctx.shadowColor = 'rgba(34,211,238,0.35)';
         ctx.shadowBlur  = GLOW * dpr;
     
         for (let i=0;i<BINS;i++){
-          const angle = (i/BINS) * Math.PI*2;
+          const angle = angleOffset + (i / BINS) * Math.PI * 2; // <— rotation here
           const ax = Math.cos(angle), ay = Math.sin(angle);
           const eased = Math.pow(smooth[i], EASING_POW);
           const len   = eased * maxLen;
@@ -622,9 +635,9 @@
           const x2 = cx + ax * (baseR + len);
           const y2 = cy + ay * (baseR + len);
     
-          // gradient makes the inner/base end transparent so there’s no visible inner circle
+          // gradient: invisible at base → bright at tip (hides inner circle)
           const g = ctx.createLinearGradient(x1,y1,x2,y2);
-          g.addColorStop(0.00, 'rgba(34,211,238,0.00)'); // invisible at base
+          g.addColorStop(0.00, 'rgba(34,211,238,0.00)');
           g.addColorStop(0.35, 'rgba(34,211,238,0.55)');
           g.addColorStop(1.00, 'rgba(34,211,238,1.00)');
     
@@ -641,22 +654,30 @@
       }
     
       /* ===== Loop & controls ===== */
-      let running=false, rafId=0;
-      function frame(){
+      let running=false, rafId=0, angleOffset=0, last=performance.now();
+    
+      function frame(now){
         rafId = requestAnimationFrame(frame);
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+    
         ctx.clearRect(0,0,w,h);
         if (!running || !analyser) return;
-        drawRadialBars();
+    
+        // advance rotation (radians)
+        angleOffset += ROTATE_SPEED * dt * Math.PI * 2;
+    
+        drawRadialBars(angleOffset);
       }
     
       async function play(){
         ensureAudio();
         if (ac.state === 'suspended') await ac.resume();
-        await audio.play();
+        await audio.play().catch(()=>{});
         running = true;
         toggle.setAttribute('aria-pressed','true');
         toggle.textContent = '♫ Pause';
-        if (!rafId) rafId = requestAnimationFrame(frame);
+        if (!rafId) { last = performance.now(); rafId = requestAnimationFrame(frame); }
       }
       function pause(){
         running = false;
@@ -664,10 +685,14 @@
         toggle.textContent = '♫ Play';
         audio.pause();
       }
+    
       toggle.addEventListener('click', () =>
         toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
       );
+    
+      // start music + viz exactly on lock click (after play() exists)
+      window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
     })();
-    </script>      
-  </body>
+    </script>
+  </body>    
 </html>
