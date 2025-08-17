@@ -276,7 +276,15 @@ footer { display: none; }
   }
   
   /* Canvas fills the viewport behind everything */
-  #musicViz { opacity: .18; filter: blur(0.3px); }
+  #musicViz{
+    position: fixed;
+    inset: 0;
+    z-index: 0;           /* behind content */
+    pointer-events: none; /* don’t block clicks */
+    opacity: .18;
+    filter: blur(0.3px);
+  }
+  
   
   /* Little play/pause chip centered near bottom */
   .audio-chip{
