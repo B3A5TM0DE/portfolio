@@ -545,6 +545,10 @@
     const GLOW         = 0;     // 0 = razor crisp (no blur)
     const GAMMA        = 0.85;  // compress peaks (lower = flatter)
     const MIN_FR       = 0.030; // minimum bar length fraction (never vanish)
+    const ACTIVE_GAIN = 0.7;     // normal listening level
+    const IDLE_GAIN   = 0.0005;  // "paused" level (almost silent)
+    const FADE_MS     = 0.35;    // fade time in seconds
+
   
     /* ===== Canvas ===== */
     const ctx = canvas.getContext('2d');
@@ -584,6 +588,16 @@
       src.connect(gainNode);
       gainNode.connect(analyser);
       analyser.connect(ac.destination);
+    }
+
+    function fadeGain(target, secs = FADE_MS){
+      if (!gainNode || !ac) return;
+      const t = ac.currentTime;
+      const start = Math.max(0.0001, gainNode.gain.value);
+      gainNode.gain.cancelScheduledValues(t);
+      gainNode.gain.setValueAtTime(start, t);
+      // exponentialRamp can't go to 0, so clamp to a tiny >0
+      gainNode.gain.exponentialRampToValueAtTime(Math.max(0.0001, target), t + secs);
     }
 
   
@@ -670,26 +684,26 @@
     async function play(){
       ensureAudio();
       if (ac.state === 'suspended') await ac.resume();
-      await audio.play();
+      try { await audio.play(); } catch (_) {}
 
-      // quick, smooth fade-in (≈350ms)
-      const now = ac.currentTime;
-      gainNode.gain.cancelScheduledValues(now);
-      gainNode.gain.setValueAtTime(Math.max(0.0001, gainNode.gain.value), now);
-      gainNode.gain.exponentialRampToValueAtTime(0.7, now + 0.35);
-
-      running = true;
+      fadeGain(ACTIVE_GAIN);                 // fade up to normal
+      running = true;                        // keep ring animating
       toggle.setAttribute('aria-pressed','true');
       toggle.textContent = '♫ Pause';
       if (!rafId) rafId = requestAnimationFrame(frame);
     }
 
+
+// Change pause() to "quiet" instead of stopping everything
     function pause(){
-      running = false;
+      ensureAudio();
+      fadeGain(IDLE_GAIN, FADE_MS);                  // drop to near-silent
+      running = true;                                // keep drawing the ring
       toggle.setAttribute('aria-pressed','false');
       toggle.textContent = '♫ Play';
-      audio.pause();
+      // DO NOT call audio.pause(); keep it playing quietly
     }
+
     toggle.addEventListener('click', () =>
       toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
     );
