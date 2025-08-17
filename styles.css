@@ -375,22 +375,25 @@ footer { display: none; }
   @keyframes hueCycle { to { --hue: 360deg; } }
 
   /* Role rotator (same size as .intro-line.small) */
+/* Role rotator (same size as .intro-line.small) */
 .role-rotator{
     position: relative;
-    height: 1.4em;         /* reserves one line so layout doesn't jump */
+    display: grid;           /* <-- let children overlap but still size the box */
+    place-items: center;
+    height: 1.4em;           /* reserves one line */
     overflow: hidden;
     color: var(--muted);
     margin-top: 6px;
     letter-spacing: .03em;
+    min-width: 14ch;         /* optional: reserve width so it doesn't jump */
   }
   
   .role-rotator .item{
-    position: absolute;
-    inset: 0;
-    display: inline-block;
+    grid-area: 1 / 1;        /* overlap items in the same cell */
     white-space: nowrap;
   }
   
+  /* animations unchanged */
   @keyframes rrIn{
     from{ opacity:0; transform: translateY(10px) scale(.995); filter: blur(3px); }
     to  { opacity:1; transform: none;                 filter: blur(0); }
@@ -399,12 +402,6 @@ footer { display: none; }
     from{ opacity:1; transform: none;                 filter: blur(0); }
     to  { opacity:0; transform: translateY(-10px) scale(.995); filter: blur(3px); }
   }
-  
   .role-rotator .item.in  { animation: rrIn 420ms cubic-bezier(.2,.7,0,1); }
   .role-rotator .item.out { animation: rrOut 420ms cubic-bezier(.2,.7,0,1) forwards; }
-  
-  /* @keyframes exitUp {
-    from { transform: translateY(0); opacity: 1; }
-    to   { transform: translateY(0); opacity: 0; }
-  } */
   
