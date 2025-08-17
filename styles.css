@@ -354,6 +354,7 @@ footer { display: none; }
     #musicViz{ display:none !important; }
   }
   
+
 /* fade-only lift — no vertical movement */
 .intro-overlay .sq-wrap.lift { animation: exitUp .7s cubic-bezier(.16,1,.3,1) forwards; }
 @keyframes exitUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(0); } }
@@ -373,6 +374,35 @@ footer { display: none; }
   @property --hue { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
   @keyframes hueCycle { to { --hue: 360deg; } }
 
+  /* Role rotator (same size as .intro-line.small) */
+.role-rotator{
+    position: relative;
+    height: 1.4em;         /* reserves one line so layout doesn't jump */
+    overflow: hidden;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: .03em;
+  }
+  
+  .role-rotator .item{
+    position: absolute;
+    inset: 0;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  
+  @keyframes rrIn{
+    from{ opacity:0; transform: translateY(10px) scale(.995); filter: blur(3px); }
+    to  { opacity:1; transform: none;                 filter: blur(0); }
+  }
+  @keyframes rrOut{
+    from{ opacity:1; transform: none;                 filter: blur(0); }
+    to  { opacity:0; transform: translateY(-10px) scale(.995); filter: blur(3px); }
+  }
+  
+  .role-rotator .item.in  { animation: rrIn 420ms cubic-bezier(.2,.7,0,1); }
+  .role-rotator .item.out { animation: rrOut 420ms cubic-bezier(.2,.7,0,1) forwards; }
+  
   /* @keyframes exitUp {
     from { transform: translateY(0); opacity: 1; }
     to   { transform: translateY(0); opacity: 0; }

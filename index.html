@@ -32,7 +32,8 @@
               <span class="name-spot">
                 <span id="nameLine" class="aurora-text"></span>
               </span>
-            </div>                     
+            </div> 
+            <div class="intro-line small role-rotator" id="roleRotator" aria-live="polite" aria-atomic="true"></div>                    
           </div>
         </div>
       </div>
@@ -694,8 +695,58 @@
     );
 
     window.__startSiteAudio = () => { play().catch(()=>{}); };
-    
+
   })();
   </script>  
+  <script>
+    (function roleRotator(){
+      const rot = document.getElementById('roleRotator');
+      if(!rot) return;
+    
+      // Edit your phrases here:
+      const phrases = [
+        "An engineer",
+        "A builder",
+        "Security-minded",
+        "A problem solver"
+      ];
+    
+      const HOLD_MS = 2200;     // time each phrase stays
+      const STAGGER = 0;        // extra delay between cycles (usually 0)
+    
+      let idx = 0, timer = null;
+    
+      function mount(text, cls){
+        const el = document.createElement('span');
+        el.className = 'item ' + (cls || '');
+        el.textContent = text;
+        rot.appendChild(el);
+        return el;
+      }
+    
+      function next(){
+        const prev = rot.querySelector('.item.in');
+        const el   = mount(phrases[idx % phrases.length], 'in');
+        idx++;
+    
+        // animate previous out, then remove
+        if (prev){
+          prev.classList.remove('in');
+          prev.classList.add('out');
+          prev.addEventListener('animationend', ()=> prev.remove(), { once:true });
+        }
+    
+        timer = setTimeout(next, HOLD_MS + STAGGER);
+      }
+    
+      // Start only after the big name appears
+      window.addEventListener('name-shown', () => {
+        // show first immediately, then cycle
+        mount(phrases[0], 'in'); idx = 1;
+        timer = setTimeout(next, HOLD_MS);
+      }, { once:true });
+    })();
+    </script>
+    
 </body>    
 </html>
