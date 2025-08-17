@@ -487,8 +487,7 @@
     function startSequence(){
       if (started) return;
       started = true;
-
-      window.__startSiteAudio?.();
+      window.dispatchEvent(new Event('hero-unlocked'));
 
       if (reduce){
         decodeEl.textContent = 'WELCOME';
@@ -540,7 +539,11 @@
     chip.hidden = true;
     function showChip(){ chip.hidden = false; }
     window.addEventListener('hero-revealed', showChip, { once:true });
-  
+  // start music + viz exactly on lock click
+    window.addEventListener('hero-unlocked', () => {
+      play().catch(()=>{ /* ignored; browser will show the chip anyway */ });
+    }, { once:true });
+
     /* ========= Visual config ========= */
     // effect type
     const EFFECT     = 'radial'; // <— circular spectrum
@@ -573,6 +576,7 @@
     }
     window.addEventListener('resize', resize);
     window.addEventListener('hero-revealed', updateCenter);
+    window.addEventListener('name-shown', updateCenter, { once: true });
     resize();
   
     /* ========= Audio (lazy init) ========= */
