@@ -534,23 +534,23 @@
     const toggle = document.getElementById('audioToggle');
     if (!audio || !canvas || !chip || !toggle) return;
   
-    // Show the chip after the wipe; auto-start on lock click (keep if you want)
+    // Show chip after wipe; start on lock click
     chip.hidden = true;
     window.addEventListener('hero-revealed', () => { chip.hidden = false; }, { once:true });
     window.addEventListener('hero-unlocked', () => { play().catch(()=>{}); }, { once:true });
   
     /* ===== Look & feel ===== */
-    const COLOR       = '#444B56'; // 👈 set your color here (hex)
-    const BINS        = 144;
-    const RADIUS_FR   = 0.28;   // base radius (fraction of min viewport)
-    const BAR_FR      = 0.12;   // max extra length (lower = less reach)
-    const MIN_FR      = 0.02;   // 👈 minimum length so bars never vanish
-    const DECAY       = 0.90;   // EMA smoothing
-    const GAMMA       = 0.70;   // <1 compresses peaks (0.5–0.8 good)
-    const BLUR_NEIGH  = 0.30;   // neighbor smoothing (0..0.5)
-    const TOUCH_FR    = 0.96;   // thickness; closer to 1 = bars nearly touch
-    const GLOW        = 16;     // px glow (auto-scales with DPR)
-    const ROTATE_SPEED= 0.08;   // revs per second (0 to stop spinning)
+    const BINS         = 168;   // many bars → smoother circle
+    const RADIUS_FR    = 0.28;  // base radius (fraction of min viewport)
+    const BAR_FR       = 0.14;  // max bar length (keeps highs in check)
+    const DECAY        = 0.82;  // time smoothing only (lower = snappier)
+    const TOUCH_FR     = 0.97;  // 0..1 — thickness as % of available arc (tiny gaps)
+    const ROTATE_SPEED = 0.00;  // revs per second
+    const COLOR        = '#444B56'; // bar color
+    const OPACITY      = 1.00;  // stroke opacity
+    const GLOW         = 0;     // 0 = razor crisp (no blur)
+    const GAMMA        = 0.85;  // compress peaks (lower = flatter)
+    const MIN_FR       = 0.030; // minimum bar length fraction (never vanish)
   
     /* ===== Canvas ===== */
     const ctx = canvas.getContext('2d');
@@ -575,16 +575,6 @@
     window.addEventListener('name-shown', updateCenter, { once:true });
     resize();
   
-    /* ===== Color helpers ===== */
-    function hexToRGB(hex){
-      let s = hex.replace('#','');
-      if (s.length === 3) s = s.split('').map(c=>c+c).join('');
-      const n = parseInt(s, 16);
-      return [(n>>16)&255, (n>>8)&255, n&255];
-    }
-    const [CR,CG,CB] = hexToRGB(COLOR);
-    const rgba = (a)=>`rgba(${CR},${CG},${CB},${a})`;
-  
     /* ===== Audio ===== */
     let ac=null, analyser=null, freq=null;
     function ensureAudio(){
@@ -597,60 +587,54 @@
       src.connect(gain); gain.connect(analyser); analyser.connect(ac.destination);
     }
   
-    /* ===== Bars (no spread; linear mapping) ===== */
-    const smooth = new Float32Array(BINS).fill(0.12); // 👈 seeded so it doesn’t start empty
-    const tmp    = new Float32Array(BINS).fill(0);
+    /* ===== Bars (no neighbor blur) ===== */
+    const smooth = new Float32Array(BINS).fill(0.18); // seed so all bars start visible
+    let angleOffset = 0, last = performance.now();
   
-    function drawRadialBars(angleOffset){
+    function drawRadialBars(){
       analyser.getByteFrequencyData(freq);
   
-      const usable = Math.floor(freq.length * 0.70);
+      const usable = Math.floor(freq.length * 0.70); // lows/mids
       for (let i = 0; i < BINS; i++) {
+        // contiguous freqs → contiguous bars (no spread)
         const idx = Math.min(usable - 1, Math.floor(i * (usable / BINS)));
-        const v   = freq[idx] / 255;                           // 0..1
-        smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);       // EMA
+        const v = freq[idx] / 255;
+        // time smoothing only (no neighbor blending)
+        smooth[i] = smooth[i] * DECAY + v * (1 - DECAY);
       }
   
-      if (BLUR_NEIGH > 0) {
-        for (let i = 0; i < BINS; i++) {
-          const im1 = (i - 1 + BINS) % BINS;
-          const ip1 = (i + 1) % BINS;
-          tmp[i] = (smooth[i]*(1-2*BLUR_NEIGH)) + (smooth[im1] + smooth[ip1]) * BLUR_NEIGH;
-        }
-        smooth.set(tmp);
-      }
+      const minwh  = Math.min(w,h);
+      const baseR  = minwh * RADIUS_FR;
+      const maxLen = minwh * BAR_FR;
   
-      const minwh   = Math.min(w,h);
-      const baseR   = minwh * RADIUS_FR;
-      const maxLen  = minwh * BAR_FR;
-      const minLen  = minwh * MIN_FR; // 👈 minimum visible length
-  
-      // bar thickness so they nearly touch
+      // thickness so bars nearly touch (tiny white space remains)
       const arcPerBin = (2 * Math.PI * baseR) / BINS;
       const lineW     = Math.max(2*dpr, arcPerBin * TOUCH_FR);
   
       ctx.lineCap = 'round';
-      ctx.shadowColor = rgba(0.35);
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = OPACITY;
+      ctx.shadowColor = COLOR;
       ctx.shadowBlur  = GLOW * dpr;
   
       for (let i=0;i<BINS;i++){
-        const angle = angleOffset + (i / BINS) * Math.PI * 2;
-        const ax = Math.cos(angle), ay = Math.sin(angle);
+        const a  = angleOffset + (i / BINS) * Math.PI * 2;
+        const ax = Math.cos(a), ay = Math.sin(a);
   
-        // compress peaks, then add minimum length
-        const eased = Math.pow(smooth[i], GAMMA);
-        const len   = minLen + eased * (maxLen - minLen);
+        // gamma-compress + minimum floor so lengths stay distinct & always visible
+        const eased = Math.pow(Math.max(smooth[i], MIN_FR), GAMMA);
+        const len   = eased * maxLen;
   
         const x1 = cx + ax * baseR;
         const y1 = cy + ay * baseR;
         const x2 = cx + ax * (baseR + len);
         const y2 = cy + ay * (baseR + len);
   
-        // transparent at base -> no inner circle ring
+        // slight base fade to avoid a solid inner ring (doesn't blur length)
         const g = ctx.createLinearGradient(x1,y1,x2,y2);
-        g.addColorStop(0.00, rgba(0.00));
-        g.addColorStop(0.35, rgba(0.55));
-        g.addColorStop(1.00, rgba(1.00));
+        g.addColorStop(0.00, 'rgba(34,211,238,0.00)');
+        g.addColorStop(0.18, 'rgba(34,211,238,0.50)');
+        g.addColorStop(1.00, COLOR);
   
         ctx.strokeStyle = g;
         ctx.lineWidth   = lineW;
@@ -661,22 +645,23 @@
         ctx.stroke();
       }
   
+      ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
     }
   
     /* ===== Loop & controls ===== */
-    let running=false, rafId=0, last=performance.now(), angleOffset=0;
-  
+    let running=false, rafId=0;
     function frame(now){
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
   
-      angleOffset += ROTATE_SPEED * dt * Math.PI * 2; // spin
+      angleOffset += ROTATE_SPEED * dt * Math.PI * 2;
   
       rafId = requestAnimationFrame(frame);
       ctx.clearRect(0,0,w,h);
       if (!running || !analyser) return;
-      drawRadialBars(angleOffset);
+  
+      drawRadialBars();
     }
   
     async function play(){
