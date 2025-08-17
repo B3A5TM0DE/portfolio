@@ -515,196 +515,188 @@
   })();
   </script>   
   <script>
-(function(){
-  const audioEl = document.getElementById('heroTrack');
-  const canvas  = document.getElementById('musicViz');
-  const chip    = document.getElementById('audioChip');
-  const toggle  = document.getElementById('audioToggle');
-  if(!audioEl || !canvas || !chip || !toggle) return;
-
-  // Pick one: 'halo' | 'particles' | 'bars'
-  const EFFECT = 'particles';
-
-  let audioCtx = null, analyser, freqData, srcNode, gain, rafId = null, running = false;
-
-  // Canvas & sizing
-  const c = canvas.getContext('2d');
-  let w=0, h=0, dpr=1, cx=0, cy=0;
-  function size(){
-    dpr = Math.min(2, window.devicePixelRatio || 1);
-    w = canvas.width  = Math.floor(innerWidth  * dpr);
-    h = canvas.height = Math.floor(innerHeight * dpr);
-    canvas.style.width  = innerWidth + 'px';
-    canvas.style.height = innerHeight + 'px';
-    updateCenter();
-    if (EFFECT === 'particles') initParticles();
-  }
-  function updateCenter(){
-    const target = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
-    const r = target.getBoundingClientRect();
-    cx = Math.round((r.left + r.width/2) * dpr);
-    cy = Math.round((r.top  + r.height/2) * dpr);
-  }
-  window.addEventListener('resize', size);
-  size();
-
-  // Audio graph
-  async function ensureAudio(){
-    if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    srcNode  = audioCtx.createMediaElementSource(audioEl);
-    gain     = audioCtx.createGain();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 1024;
-    freqData = new Uint8Array(analyser.frequencyBinCount);
-
-    srcNode.connect(gain);
-    gain.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    gain.gain.value = 0.7;
-  }
-
-  // Bass energy (20–160 Hz)
-  function getBassEnergy(){
-    analyser.getByteFrequencyData(freqData);
-    const ny = audioCtx.sampleRate / 2;
-    const low = 20, high = 160;
-    const li = Math.max(0, Math.floor(low  / ny * freqData.length));
-    const hi = Math.min(freqData.length-1, Math.floor(high / ny * freqData.length));
-    let sum = 0, n = 0;
-    for(let i=li;i<=hi;i++){ sum += freqData[i]; n++; }
-    return (sum / Math.max(1,n)) / 255; // 0..1
-  }
-
-  /* ---------- EFFECTS ---------- */
-
-  // 1) Soft HALO around your name
-  function drawHalo(bass){
-    const alpha = 0.05 + bass * 0.18;                 // overall glow strength
-    const r     = Math.min(w,h) * (0.22 + bass*0.12); // glow radius
-    const g = c.createRadialGradient(cx,cy,0, cx,cy,r);
-    g.addColorStop(0, `rgba(34,211,238,${alpha})`);
-    g.addColorStop(1, `rgba(34,211,238,0)`);
-    c.fillStyle = g;
-    c.fillRect(0,0,w,h);
-
-    // Subtle ring
-    c.beginPath();
-    c.arc(cx, cy, r*0.85, 0, Math.PI*2);
-    c.strokeStyle = 'rgba(34,211,238,1)';
-    c.globalAlpha = 0.08 + bass*0.12;
-    c.lineWidth = (1 + bass*2) * dpr;
-    c.stroke();
-    c.globalAlpha = 1;
-  }
-
-  // 2) Floating PARTICLES that shimmer on bass
-  const particles = [];
-  function initParticles(){
-    particles.length = 0;
-    const targetCount = Math.min(140, Math.max(60, Math.round((w*h)/(1100*1100)*120)));
-    for(let i=0;i<targetCount;i++){
-      particles.push({
-        x: Math.random()*w,
-        y: Math.random()*h,
-        vx: (Math.random()-0.5)*8,
-        vy: (Math.random()-0.5)*8,
-        r: 1 + Math.random()*2,
-        a: 0.06 + Math.random()*0.08
+    (function audioViz(){
+      const audioEl = document.getElementById('heroTrack');
+      const canvas  = document.getElementById('musicViz');
+      const chip    = document.getElementById('audioChip');
+      const toggle  = document.getElementById('audioToggle');
+      if(!audioEl || !canvas || !chip || !toggle) return;
+    
+      // Pick one: 'halo' | 'particles' | 'bars'
+      const EFFECT = 'particles';
+    
+      /* ---------- Canvas + sizing ---------- */
+      const c = canvas.getContext('2d');
+      let w=0, h=0, dpr=1, cx=0, cy=0;
+      function size(){
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        w = canvas.width  = Math.floor(innerWidth  * dpr);
+        h = canvas.height = Math.floor(innerHeight * dpr);
+        canvas.style.width  = innerWidth + 'px';
+        canvas.style.height = innerHeight + 'px';
+        updateCenter();
+        if (EFFECT === 'particles') initParticles();
+      }
+      function updateCenter(){
+        const target = document.querySelector('#bigLine .name-spot') || document.getElementById('bigLine') || document.body;
+        const r = target.getBoundingClientRect();
+        cx = Math.round((r.left + r.width/2) * dpr);
+        cy = Math.round((r.top  + r.height/2) * dpr);
+      }
+      window.addEventListener('resize', size);
+      size();
+    
+      /* ---------- Audio graph ---------- */
+      let audioCtx=null, analyser, freqData, srcNode, gain;
+      async function ensureAudio(){
+        if (audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        srcNode  = audioCtx.createMediaElementSource(audioEl);
+        gain     = audioCtx.createGain();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+        srcNode.connect(gain);
+        gain.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        gain.gain.value = 0.7;
+      }
+      function getBassEnergy(){
+        analyser.getByteFrequencyData(freqData);
+        const ny = audioCtx.sampleRate / 2;
+        const low = 20, high = 160;
+        const li = Math.max(0, Math.floor(low  / ny * freqData.length));
+        const hi = Math.min(freqData.length-1, Math.floor(high / ny * freqData.length));
+        let sum = 0, n = 0;
+        for(let i=li;i<=hi;i++){ sum += freqData[i]; n++; }
+        return (sum / Math.max(1,n)) / 255; // 0..1
+      }
+    
+      /* ---------- Effects ---------- */
+      function drawHalo(bass){
+        const alpha = 0.05 + bass * 0.18;
+        const r     = Math.min(w,h) * (0.22 + bass*0.12);
+        const g = c.createRadialGradient(cx,cy,0, cx,cy,r);
+        g.addColorStop(0, `rgba(34,211,238,${alpha})`);
+        g.addColorStop(1, `rgba(34,211,238,0)`);
+        c.fillStyle = g;
+        c.fillRect(0,0,w,h);
+    
+        c.beginPath();
+        c.arc(cx, cy, r*0.85, 0, Math.PI*2);
+        c.strokeStyle = 'rgba(34,211,238,1)';
+        c.globalAlpha = 0.08 + bass*0.12;
+        c.lineWidth = (1 + bass*2) * dpr;
+        c.stroke();
+        c.globalAlpha = 1;
+      }
+    
+      const particles = [];
+      function initParticles(){
+        particles.length = 0;
+        const targetCount = Math.min(140, Math.max(60, Math.round((w*h)/(1100*1100)*120)));
+        for(let i=0;i<targetCount;i++){
+          particles.push({
+            x: Math.random()*w,
+            y: Math.random()*h,
+            vx: (Math.random()-0.5)*8,
+            vy: (Math.random()-0.5)*8,
+            r: 1 + Math.random()*2,
+            a: 0.06 + Math.random()*0.08
+          });
+        }
+      }
+      function drawParticles(bass, dt){
+        const boost = 1 + bass*1.5;
+        for(const p of particles){
+          p.x += p.vx * dt * 10 * boost;
+          p.y += p.vy * dt * 10 * boost;
+          if(p.x<-20) p.x=w+20; else if(p.x>w+20) p.x=-20;
+          if(p.y<-20) p.y=h+20; else if(p.y>h+20) p.y=-20;
+          c.beginPath();
+          c.arc(p.x, p.y, p.r*dpr, 0, Math.PI*2);
+          c.fillStyle = `rgba(34,211,238,${p.a + bass*0.08})`;
+          c.fill();
+        }
+      }
+    
+      function drawBars(){
+        const bins = 24;
+        const pad = Math.max(2, Math.floor(w / bins * 0.2));
+        const barW = Math.floor((w - pad*(bins+1)) / bins);
+        const usable = Math.floor(freqData.length * 0.65);
+        for(let i=0;i<bins;i++){
+          const idx = Math.floor(i / bins * usable);
+          const v = freqData[idx] / 255;
+          const hBar = Math.max(2, v * (h*0.18));
+          const x = Math.floor(pad + i*(barW+pad));
+          const y = h - hBar - pad;
+          c.globalAlpha = 0.25;
+          c.fillStyle = '#22d3ee';
+          c.fillRect(x, y, barW, hBar);
+        }
+        c.globalAlpha = 1;
+      }
+    
+      /* ---------- Loop ---------- */
+      let running = false, rafId = null, last = performance.now();
+      function loop(now){
+        rafId = requestAnimationFrame(loop);
+        const dt = Math.min(0.05, (now - last)/1000);
+        last = now;
+    
+        c.clearRect(0,0,w,h);
+        if(!running) return;
+    
+        analyser.getByteFrequencyData(freqData);
+        const bass = getBassEnergy();
+        if (EFFECT === 'halo')       drawHalo(bass);
+        else if (EFFECT === 'bars')  drawBars();
+        else                         drawParticles(bass, dt);
+      }
+    
+      /* ---------- Controls ---------- */
+      async function play(){
+        await ensureAudio();
+        if(audioCtx.state === 'suspended') await audioCtx.resume();
+        try {
+          await audioEl.play();
+          running = true;
+          toggle.setAttribute('aria-pressed','true');
+          toggle.textContent = '♫ Pause';
+          if(!rafId){ last = performance.now(); rafId = requestAnimationFrame(loop); }
+        } catch (e) {
+          console.error('Audio play() failed:', e);
+          alert('Could not start audio (check file path / console).');
+        }
+      }
+      function pause(){
+        running = false;
+        toggle.setAttribute('aria-pressed','false');
+        toggle.textContent = '♫ Play';
+        audioEl.pause();
+      }
+      toggle.addEventListener('click', ()=> (
+        toggle.getAttribute('aria-pressed') === 'true' ? pause() : play()
+      ));
+    
+      /* ---------- Make sure the chip shows ---------- */
+      function showChip(){ chip.hidden = false; updateCenter(); }
+      window.addEventListener('hero-revealed', showChip, { once:true });
+    
+      // Fallbacks in case the custom event is missed
+      if (document.readyState !== 'loading') {
+        setTimeout(()=>{ if (chip.hidden) showChip(); }, 400);
+      } else {
+        document.addEventListener('DOMContentLoaded', ()=> {
+          setTimeout(()=>{ if (chip.hidden) showChip(); }, 400);
+        });
+      }
+      window.addEventListener('load', ()=> {
+        setTimeout(()=>{ if (chip.hidden) showChip(); }, 800);
       });
-    }
-  }
-  function drawParticles(bass, dt){
-    const boost = 1 + bass*1.5;
-    for(const p of particles){
-      p.x += p.vx * dt * 10 * boost;
-      p.y += p.vy * dt * 10 * boost;
-      if(p.x<-20) p.x=w+20; else if(p.x>w+20) p.x=-20;
-      if(p.y<-20) p.y=h+20; else if(p.y>h+20) p.y=-20;
-      c.beginPath();
-      c.arc(p.x, p.y, p.r*dpr, 0, Math.PI*2);
-      c.fillStyle = `rgba(34,211,238,${p.a + bass*0.08})`;
-      c.fill();
-    }
-  }
-
-  // 3) Minimal BARS at the bottom
-  function drawBars(){
-    const bins = 24;
-    const pad = Math.max(2, Math.floor(w / bins * 0.2));
-    const barW = Math.floor((w - pad*(bins+1)) / bins);
-    const usable = Math.floor(freqData.length * 0.65); // low–mid portion
-    for(let i=0;i<bins;i++){
-      const idx = Math.floor(i / bins * usable);
-      const v = freqData[idx] / 255;
-      const hBar = Math.max(2, v * (h*0.18));
-      const x = Math.floor(pad + i*(barW+pad));
-      const y = h - hBar - pad;
-      c.globalAlpha = 0.25;
-      c.fillStyle = '#22d3ee';
-      c.fillRect(x, y, barW, hBar);
-    }
-    c.globalAlpha = 1;
-  }
-
-  /* ---------- LOOP ---------- */
-  let last = performance.now();
-  function loop(now){
-    rafId = requestAnimationFrame(loop);
-    const dt = Math.min(0.05, (now - last)/1000);
-    last = now;
-
-    c.clearRect(0,0,w,h);
-    if(!running) return;
-
-    analyser.getByteFrequencyData(freqData);
-    const bass = getBassEnergy();
-
-    if (EFFECT === 'halo')       drawHalo(bass);
-    else if (EFFECT === 'bars')  drawBars();
-    else                         drawParticles(bass, dt);
-  }
-
-  /* ---------- Controls (unchanged, with error handling) ---------- */
-  async function play(){
-    await ensureAudio();
-    if(audioCtx.state === 'suspended') await audioCtx.resume();
-    try {
-      await audioEl.play();
-      running = true;
-      toggle.setAttribute('aria-pressed','true');
-      toggle.textContent = '♫ Pause';
-      if(!rafId){ last = performance.now(); rafId = requestAnimationFrame(loop); }
-    } catch (e) {
-      console.error('Audio play() failed:', e);
-      alert('Could not start audio (check file path / console).');
-    }
-  }
-  function pause(){
-    running = false;
-    toggle.setAttribute('aria-pressed','false');
-    toggle.textContent = '♫ Play';
-    audioEl.pause();
-  }
-
-  function showChip(){ chip.hidden = false; updateCenter(); }
-
-window.addEventListener('hero-revealed', showChip, { once:true });
-
-// Fallback: show even if the overlay was skipped or if DOMContentLoaded already fired
-if (document.readyState !== 'loading') {
-  setTimeout(()=>{ if (chip.hidden) showChip(); }, 400);
-} else {
-  document.addEventListener('DOMContentLoaded', ()=> {
-    setTimeout(()=>{ if (chip.hidden) showChip(); }, 400);
-  });
-}
-
-  toggle.addEventListener('click', async ()=>{
-    if(toggle.getAttribute('aria-pressed') === 'true') pause();
-    else await play();
-  });
-})();
-</script>
+    })();
+    </script>
+    
 </body>
 </html>
