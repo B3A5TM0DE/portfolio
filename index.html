@@ -855,6 +855,10 @@
         return;
       }
 
+      // Reset any hover states and ensure clean animation state
+      sq.style.animationPlayState = 'running';
+      sq.style.filter = 'none';
+      
       // show the reserved line without causing layout shift
       decodeEl.style.visibility = 'visible';
 

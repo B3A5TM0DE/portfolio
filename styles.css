@@ -711,6 +711,18 @@ footer { display: none; }
     width:44px; height:44px; background:#fff; border-radius:10px;
     display:grid; place-items:center; position:relative;
     animation: boxPulse 12s ease-in-out infinite;
+    animation-play-state: running;
+  }
+  
+  /* Pause animations when user is interacting */
+  .intro-overlay .square:hover {
+    animation-play-state: paused;
+  }
+  
+  /* Stop all animations when spinning */
+  .intro-overlay .square.spin {
+    animation: spin360 .9s cubic-bezier(.2,.8,.2,1) forwards !important;
+    animation-play-state: running !important;
   }
   .intro-overlay .square::before{
     content:""; position:absolute; inset:-12px; border-radius:14px; z-index:-1;
@@ -734,6 +746,12 @@ footer { display: none; }
     background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
     filter: blur(6px);
     animation: ripplePulse 12s ease-in-out infinite;
+    animation-play-state: running;
+  }
+  
+  /* Pause ripple animations on hover */
+  .intro-overlay .square:hover::before {
+    animation-play-state: paused;
   }
   
   /* Additional ripple layers */
@@ -749,6 +767,14 @@ footer { display: none; }
     border-radius: 10px;
     transform: translate(-50%, -50%);
     animation: rippleExpand 12s ease-in-out infinite;
+    animation-play-state: running;
+  }
+  
+  /* Pause ripple expand animations on hover */
+  .intro-overlay .square:hover .ripple-1,
+  .intro-overlay .square:hover .ripple-2,
+  .intro-overlay .square:hover .ripple-3 {
+    animation-play-state: paused;
   }
   
   .intro-overlay .square .ripple-1 {
@@ -778,8 +804,18 @@ footer { display: none; }
   
   /* enhanced hover effect for the entire square */
   .intro-overlay .square:hover {
-    animation: boxPulse 1.5s ease-in-out infinite;
     cursor: pointer;
+    filter: brightness(1.1);
+    transition: filter 0.3s ease;
+  }
+  
+  /* Remove hover animation when spinning to avoid conflicts */
+  .intro-overlay .square.spin {
+    animation: spin360 .9s cubic-bezier(.2,.8,.2,1) forwards !important;
+  }
+  
+  .intro-overlay .square.spin .keyhole {
+    animation: counterSpin .9s cubic-bezier(.2,.8,.2,1) forwards !important;
   }
   
   /* fade-only lift (no movement) */
