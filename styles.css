@@ -1,4 +1,4 @@
-:root { --headerH: 80px; --maxW: 1100px; --cardRadius: 16px; --cardPad: 32px; --gap: 24px; --ink: #0b0b0b; --muted: #6b7280; --line: #e5e7eb; --bgSubtle: #f8fafc; --introDelay: .5s; --neon: #22d3ee; }
+:root { --headerH: 80px; --maxW: 1100px; --cardRadius: 16px; --cardPad: 32px; --gap: 24px; --ink: #0b0b0b; --muted: #6b7280; --line: #e5e7eb; --bgSubtle: #f8fafc; --introDelay: .5s; --accent: #374151; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #fff; color: var(--ink); }
@@ -53,7 +53,7 @@ main { padding-top: var(--headerH); }
   
   /* Gradient text remains the same */
   .gradient {
-    background-image: linear-gradient(90deg, #06b6d4, #2563eb, #8b5cf6);
+    background-image: linear-gradient(90deg, #374151, #6b7280, #9ca3af);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -140,8 +140,8 @@ body.no-scroll { overflow: hidden; }
 
 /* ===== Experience Page ===== */
 .experience-page {
-  height: calc(100vh - 80px); /* Subtract header height */
-  overflow: hidden;
+  min-height: calc(100vh - 80px); /* Subtract header height */
+  overflow: visible;
 }
 
 .experience-header {
@@ -169,13 +169,13 @@ body.no-scroll { overflow: hidden; }
   gap: 80px;
   max-width: 1000px;
   margin: 0 auto;
-  height: calc(100vh - 80px - 120px); /* Header + page header height */
+  min-height: calc(100vh - 80px - 120px); /* Header + page header height */
 }
 
 .experience-section,
 .skills-section {
-  height: 100%;
-  overflow-y: auto;
+  height: auto;
+  overflow-y: visible;
   padding-right: 20px; /* Space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
@@ -200,7 +200,7 @@ body.no-scroll { overflow: hidden; }
 
 .experience-section::-webkit-scrollbar-thumb:hover,
 .skills-section::-webkit-scrollbar-thumb:hover {
-  background: var(--neon);
+  background: var(--accent);
 }
 
 .experience-section h3,
@@ -232,31 +232,10 @@ body.no-scroll { overflow: hidden; }
 .job-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: var(--neon);
+  border-color: var(--accent);
 }
 
-/* Company logo styling */
-.company-logo {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
 
-.company-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 4px;
-}
 
 .job-header h4 {
   font-size: 1.3rem;
@@ -267,7 +246,7 @@ body.no-scroll { overflow: hidden; }
 
 .company {
   display: block;
-  color: var(--neon);
+  color: var(--accent);
   font-weight: 600;
   margin-bottom: 6px;
   font-size: 1rem;
@@ -312,9 +291,9 @@ body.no-scroll { overflow: hidden; }
 }
 
 .tech-tag:hover {
-  background: var(--neon);
+  background: var(--accent);
   color: white;
-  border-color: var(--neon);
+  border-color: var(--accent);
 }
 
 .skill-category {
@@ -346,9 +325,9 @@ body.no-scroll { overflow: hidden; }
 }
 
 .skill-item:hover {
-  background: var(--neon);
+  background: var(--accent);
   color: white;
-  border-color: var(--neon);
+  border-color: var(--accent);
 }
 
 /* Add buffer space at the bottom of sections */
@@ -363,15 +342,14 @@ body.no-scroll { overflow: hidden; }
 /* Responsive design */
 @media (max-width: 768px) {
   .experience-page {
-    height: auto;
+    min-height: auto;
     overflow: visible;
   }
   
   .experience-content {
     grid-template-columns: 1fr;
     gap: 40px;
-    height: auto;
-    flex: none;
+    min-height: auto;
   }
   
   .experience-section,
@@ -433,7 +411,7 @@ body.no-scroll { overflow: hidden; }
 
 .skill-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--neon), #2563eb);
+  background: linear-gradient(90deg, var(--accent), #4b5563);
   border-radius: 4px;
   transition: width 0.8s ease;
 }
@@ -484,7 +462,7 @@ body.no-scroll { overflow: hidden; }
 }
 
 .contact-method a {
-  color: var(--neon);
+  color: var(--accent);
   text-decoration: none;
   font-weight: 500;
 }
@@ -525,11 +503,11 @@ body.no-scroll { overflow: hidden; }
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--neon);
+  border-color: var(--accent);
 }
 
 .submit-btn {
-  background: var(--neon);
+  background: var(--accent);
   color: white;
   border: none;
   padding: 14px 28px;
@@ -541,7 +519,7 @@ body.no-scroll { overflow: hidden; }
 }
 
 .submit-btn:hover {
-  background: #06a6c4;
+  background: #1f2937;
 }
 
 /* ===== Responsive Design ===== */
@@ -630,13 +608,13 @@ footer { display: none; }
   }
   .intro-overlay .square::before{
     content:""; position:absolute; inset:-12px; border-radius:14px; z-index:-1;
-    background:radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
+    background:radial-gradient(50% 50% at 50% 50%, rgba(55,65,81,.35) 0%, rgba(55,65,81,0) 65%);
     filter:blur(6px);
   }
   .intro-overlay .square::after{
     content:""; position:absolute; left:50%; bottom:-8px; width:66px; height:16px;
     transform:translateX(-50%); filter:blur(0.6px);
-    background:radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.45) 0%, rgba(34,211,238,0) 60%);
+    background:radial-gradient(50% 50% at 50% 50%, rgba(55,65,81,.45) 0%, rgba(55,65,81,0) 60%);
     opacity:.6;
   }
   
@@ -647,7 +625,7 @@ footer { display: none; }
     inset: -12px;
     border-radius: 14px;
     z-index: -1;
-    background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
+    background: radial-gradient(50% 50% at 50% 50%, rgba(55,65,81,.35) 0%, rgba(55,65,81,0) 65%);
     filter: blur(6px);
     animation: ripplePulse 12s ease-in-out infinite;
     animation-play-state: running;
@@ -846,13 +824,13 @@ footer { display: none; }
   /* animated, multi-layer gradient clipped into text */
   .aurora-text{
     background:
-      linear-gradient(120deg, #ff4d67, #ffd166, #06d6a0, #118ab2, #a855f7),
+      linear-gradient(120deg, #dc2626, #d97706, #059669, #374151, #7c3aed),
       linear-gradient(300deg,
-        rgba(255,198,64,var(--aurora-intensity)),
-        rgba(229,76,255,var(--aurora-intensity))),
+        rgba(217,119,6,var(--aurora-intensity)),
+        rgba(124,58,237,var(--aurora-intensity))),
       linear-gradient( 30deg,
-        rgba(51,255,140,var(--aurora-intensity)),
-        rgba(0,194,255,var(--aurora-intensity)));
+        rgba(5,150,105,var(--aurora-intensity)),
+        rgba(55,65,81,var(--aurora-intensity)));
     background-size: 300% 300%, 220% 220%, 220% 220%;
     background-position: 0% 50%, 100% 50%, 50% 0%;
   
