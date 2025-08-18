@@ -147,11 +147,24 @@ body.no-scroll { overflow: hidden; }
 .experience-header h2 {
   font-size: 3rem;
   margin: 0 0 16px 0;
-  background: linear-gradient(135deg, var(--neon), #2563eb);
+  background: linear-gradient(135deg, var(--neon), #8b5cf6, #ec4899);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   font-weight: 800;
+  animation: auroraShift 8s ease-in-out infinite;
+}
+
+@keyframes auroraShift {
+  0%, 100% { 
+    background: linear-gradient(135deg, var(--neon), #8b5cf6, #ec4899);
+  }
+  33% { 
+    background: linear-gradient(135deg, #8b5cf6, #ec4899, var(--neon));
+  }
+  66% { 
+    background: linear-gradient(135deg, #ec4899, var(--neon), #8b5cf6);
+  }
 }
 
 .experience-subtitle {
@@ -171,22 +184,27 @@ body.no-scroll { overflow: hidden; }
 .stat-item {
   text-align: center;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(37, 99, 235, 0.1));
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  border: 1px solid rgba(34, 211, 238, 0.2);
+  border: 1px solid var(--line);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .stat-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(34, 211, 238, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: var(--neon);
 }
 
 .stat-number {
   display: block;
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--neon);
+  background: linear-gradient(135deg, var(--neon), #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   margin-bottom: 8px;
 }
 
@@ -210,7 +228,7 @@ body.no-scroll { overflow: hidden; }
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--neon), #2563eb, var(--neon));
+  background: linear-gradient(180deg, var(--neon), #8b5cf6, #ec4899, var(--neon));
   border-radius: 2px;
 }
 
@@ -305,7 +323,7 @@ body.no-scroll { overflow: hidden; }
 }
 
 .job-badge {
-  background: linear-gradient(135deg, var(--neon), #2563eb);
+  background: linear-gradient(135deg, var(--neon), #8b5cf6);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;
@@ -318,7 +336,10 @@ body.no-scroll { overflow: hidden; }
 
 .company {
   display: block;
-  color: var(--neon);
+  background: linear-gradient(135deg, var(--neon), #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 1.1rem;
@@ -376,10 +397,7 @@ body.no-scroll { overflow: hidden; }
   transform: translateX(5px);
 }
 
-.achievement-icon {
-  margin-right: 12px;
-  font-size: 1.2rem;
-}
+/* Removed achievement icon styling since we're not using emojis anymore */
 
 .tech-stack {
   margin-top: 24px;
@@ -392,21 +410,22 @@ body.no-scroll { overflow: hidden; }
 }
 
 .tech-tag {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(37, 99, 235, 0.1));
+  background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
-  border: 1px solid rgba(34, 211, 238, 0.3);
+  border: 1px solid var(--line);
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .tech-tag:hover {
-  background: linear-gradient(135deg, var(--neon), #2563eb);
+  background: linear-gradient(135deg, var(--neon), #8b5cf6);
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(34, 211, 238, 0.3);
+  border-color: var(--neon);
 }
 
 .experience-footer {
@@ -415,12 +434,13 @@ body.no-scroll { overflow: hidden; }
 }
 
 .career-highlight {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.05), rgba(37, 99, 235, 0.05));
+  background: rgba(255, 255, 255, 0.02);
   padding: 60px 40px;
   border-radius: 24px;
-  border: 1px solid rgba(34, 211, 238, 0.2);
+  border: 1px solid var(--line);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .career-highlight::before {
@@ -430,7 +450,7 @@ body.no-scroll { overflow: hidden; }
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
   animation: rotate 20s linear infinite;
 }
 
@@ -459,7 +479,7 @@ body.no-scroll { overflow: hidden; }
 
 .cta-button {
   display: inline-block;
-  background: linear-gradient(135deg, var(--neon), #2563eb);
+  background: linear-gradient(135deg, var(--neon), #8b5cf6);
   color: white;
   text-decoration: none;
   padding: 16px 32px;
@@ -475,6 +495,7 @@ body.no-scroll { overflow: hidden; }
 .cta-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 32px rgba(34, 211, 238, 0.4);
+  background: linear-gradient(135deg, #8b5cf6, var(--neon));
 }
 
 /* Animation classes for scroll reveal */
