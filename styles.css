@@ -177,7 +177,6 @@ body.no-scroll { overflow: hidden; }
   height: 100%;
   overflow-y: auto;
   padding-right: 20px; /* Space for scrollbar */
-  padding-bottom: 40px; /* Buffer space at bottom */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
   min-height: 0; /* Allow sections to shrink and scroll */
@@ -326,6 +325,12 @@ body.no-scroll { overflow: hidden; }
   background: var(--neon);
   color: white;
   border-color: var(--neon);
+}
+
+/* Add buffer space at the bottom of sections */
+.experience-section .job-card:last-child,
+.skills-section .skill-category:last-child {
+  margin-bottom: 40px;
 }
 
 /* Responsive design */
