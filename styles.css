@@ -175,7 +175,6 @@ body.no-scroll { overflow: hidden; }
   margin: 0 auto;
   flex: 1;
   min-height: 0; /* Allow grid to shrink */
-  height: 0; /* Force grid to respect flex container */
 }
 
 .experience-section,
@@ -186,7 +185,6 @@ body.no-scroll { overflow: hidden; }
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
   min-height: 0; /* Allow sections to shrink and scroll */
-  max-height: 100%; /* Ensure sections don't exceed container */
 }
 
 .experience-section::-webkit-scrollbar,
