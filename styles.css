@@ -163,6 +163,37 @@ body.no-scroll { overflow: hidden; }
   gap: 80px;
   max-width: 1000px;
   margin: 0 auto;
+  height: calc(100vh - 200px); /* Full viewport height minus header space */
+}
+
+.experience-section,
+.skills-section {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 20px; /* Space for scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.experience-section::-webkit-scrollbar,
+.skills-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.experience-section::-webkit-scrollbar-track,
+.skills-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.experience-section::-webkit-scrollbar-thumb,
+.skills-section::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.experience-section::-webkit-scrollbar-thumb:hover,
+.skills-section::-webkit-scrollbar-thumb:hover {
+  background: var(--neon);
 }
 
 .experience-section h3,
@@ -173,6 +204,12 @@ body.no-scroll { overflow: hidden; }
   font-weight: 600;
   border-bottom: 2px solid var(--line);
   padding-bottom: 12px;
+  position: sticky;
+  top: 0;
+  background: white;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  z-index: 10;
 }
 
 .job-card {
@@ -288,6 +325,20 @@ body.no-scroll { overflow: hidden; }
   .experience-content {
     grid-template-columns: 1fr;
     gap: 40px;
+    height: auto;
+  }
+  
+  .experience-section,
+  .skills-section {
+    height: auto;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+  
+  .experience-section h3,
+  .skills-section h3 {
+    position: static;
+    background: transparent;
   }
   
   .experience-header h2 {
