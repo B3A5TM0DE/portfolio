@@ -139,9 +139,17 @@ body.no-scroll { overflow: hidden; }
 }
 
 /* ===== Experience Page ===== */
+.experience-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .experience-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
+  flex-shrink: 0;
 }
 
 .experience-header h2 {
@@ -163,7 +171,9 @@ body.no-scroll { overflow: hidden; }
   gap: 80px;
   max-width: 1000px;
   margin: 0 auto;
-  height: calc(100vh - 200px); /* Full viewport height minus header space */
+  height: 0;
+  flex: 1;
+  min-height: 0;
 }
 
 .experience-section,
@@ -173,6 +183,7 @@ body.no-scroll { overflow: hidden; }
   padding-right: 20px; /* Space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
+  min-height: 0;
 }
 
 .experience-section::-webkit-scrollbar,
@@ -322,10 +333,16 @@ body.no-scroll { overflow: hidden; }
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .experience-page {
+    height: auto;
+    overflow: visible;
+  }
+  
   .experience-content {
     grid-template-columns: 1fr;
     gap: 40px;
     height: auto;
+    flex: none;
   }
   
   .experience-section,
@@ -333,6 +350,7 @@ body.no-scroll { overflow: hidden; }
     height: auto;
     overflow-y: visible;
     padding-right: 0;
+    min-height: auto;
   }
   
   .experience-section h3,
