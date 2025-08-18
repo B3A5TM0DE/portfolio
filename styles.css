@@ -427,6 +427,8 @@ section.anchor { scroll-margin-top: var(--headerH); }
   color: var(--ink);
   margin: 0 0 32px 0;
   font-weight: 600;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 12px;
   position: sticky;
   top: 0;
   background: white;
