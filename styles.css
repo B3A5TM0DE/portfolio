@@ -710,7 +710,7 @@ footer { display: none; }
   .intro-overlay .square{
     width:44px; height:44px; background:#fff; border-radius:10px;
     display:grid; place-items:center; position:relative;
-    animation: boxPulse 3s ease-in-out infinite;
+    animation: boxPulse 12s ease-in-out infinite;
   }
   .intro-overlay .square::before{
     content:""; position:absolute; inset:-12px; border-radius:14px; z-index:-1;
@@ -733,7 +733,7 @@ footer { display: none; }
     z-index: -1;
     background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
     filter: blur(6px);
-    animation: ripplePulse 3s ease-in-out infinite;
+    animation: ripplePulse 12s ease-in-out infinite;
   }
   
   /* Additional ripple layers */
@@ -748,7 +748,7 @@ footer { display: none; }
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 10px;
     transform: translate(-50%, -50%);
-    animation: rippleExpand 3s ease-in-out infinite;
+    animation: rippleExpand 12s ease-in-out infinite;
   }
   
   .intro-overlay .square .ripple-1 {
@@ -756,11 +756,11 @@ footer { display: none; }
   }
   
   .intro-overlay .square .ripple-2 {
-    animation-delay: 1s;
+    animation-delay: 4s;
   }
   
   .intro-overlay .square .ripple-3 {
-    animation-delay: 2s;
+    animation-delay: 8s;
   }
   .intro-overlay .square .keyhole{
     position:relative; width:18px; height:28px; display:block; transform-origin:50% 50%;
