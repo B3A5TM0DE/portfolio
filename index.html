@@ -951,6 +951,52 @@
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
     }
+    
+    // Draw static neutral bars when paused
+    function drawStaticBars(){
+      const minwh  = Math.min(w,h);
+      const baseR  = minwh * RADIUS_FR;
+      const neutralLen = minwh * BAR_FR * 0.18; // Use the seed value for neutral length
+      
+      // thickness so bars nearly touch (tiny white space remains)
+      const arcPerBin = (2 * Math.PI * baseR) / BINS;
+      const lineW     = Math.max(2*dpr, arcPerBin * TOUCH_FR);
+      
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = OPACITY * 0.5; // Slightly dimmed when paused
+      ctx.shadowColor = COLOR;
+      ctx.shadowBlur  = GLOW * dpr * 0.5; // Reduced glow when paused
+      
+      for (let i=0;i<BINS;i++){
+        const a  = angleOffset + (i / BINS) * Math.PI * 2;
+        const ax = Math.cos(a), ay = Math.sin(a);
+        
+        const x1 = cx + ax * baseR;
+        const y1 = cy + ay * baseR;
+        const x2 = cx + ax * (baseR + neutralLen);
+        const y2 = cy + ay * (baseR + neutralLen);
+        
+        const LIGHT = '#7C8189';   // lighter effect
+
+        const g = ctx.createLinearGradient(x1, y1, x2, y2);
+        g.addColorStop(0.00, 'rgba(124,129,137,0)');   // LIGHT @ 0% alpha
+        g.addColorStop(0.18, 'rgba(124,129,137,0.5)'); // LIGHT 50%
+        g.addColorStop(1.00, 'rgba(124,129,137,1)');   // LIGHT 100%
+        ctx.strokeStyle = g;
+        ctx.shadowColor = 'rgba(124,129,137,1)';       // if you're using glow
+        
+        ctx.lineWidth   = lineW;
+        
+        ctx.beginPath();
+        ctx.moveTo(x1,y1);
+        ctx.lineTo(x2,y2);
+        ctx.stroke();
+      }
+      
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    }
   
     /* ===== Loop & controls ===== */
     let running=false, rafId=0;
@@ -962,7 +1008,12 @@
   
       rafId = requestAnimationFrame(frame);
       ctx.clearRect(0,0,w,h);
-      if (!running || !analyser) return;
+      
+      if (!running || !analyser) {
+        // When paused, draw static neutral bars
+        drawStaticBars();
+        return;
+      }
   
       drawRadialBars();
     }
@@ -984,7 +1035,13 @@
     function pause(){
       ensureAudio();
       fadeGain(IDLE_GAIN, FADE_MS);                  // drop to near-silent
-      running = true;                                // keep drawing the ring
+      running = false;                               // stop the animation loop
+      
+      // Reset bars to neutral state when pausing
+      for (let i = 0; i < BINS; i++) {
+        smooth[i] = 0.18; // Reset to the initial seed value
+      }
+      
       toggle.setAttribute('aria-pressed','false');
       toggle.textContent = '♫ Play';
       // DO NOT call audio.pause(); keep it playing quietly
