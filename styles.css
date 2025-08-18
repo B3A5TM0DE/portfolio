@@ -144,6 +144,7 @@ body.no-scroll { overflow: hidden; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 2px solid red; /* Debug: visualize page bounds */
 }
 
 .experience-header {
@@ -174,6 +175,8 @@ body.no-scroll { overflow: hidden; }
   margin: 0 auto;
   flex: 1;
   min-height: 0;
+  height: 0; /* Force grid to respect flex container */
+  border: 2px solid blue; /* Debug: visualize content bounds */
 }
 
 .experience-section,
@@ -183,6 +186,7 @@ body.no-scroll { overflow: hidden; }
   padding-right: 20px; /* Space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
+  min-height: 0; /* Allow grid items to shrink */
 }
 
 .experience-section::-webkit-scrollbar,
