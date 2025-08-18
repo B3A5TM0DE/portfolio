@@ -329,7 +329,7 @@ body.no-scroll { overflow: hidden; }
 
 /* Add buffer space at the bottom of sections */
 .experience-section .job-card:last-child {
-  margin-bottom: 80px; /* More space for work experience section */
+  margin-bottom: 120px; /* Generous space for work experience section */
 }
 
 .skills-section .skill-category:last-child {
