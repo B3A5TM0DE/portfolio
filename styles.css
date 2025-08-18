@@ -80,8 +80,8 @@ section.anchor { scroll-margin-top: var(--headerH); }
 
 /* ===== Projects: Grid layout with hover expansion ===== */
 #projects { background: var(--bgSubtle); padding: 0; min-height: 100vh; }
-.projects-grid-container { width: min(var(--maxW), 92%); margin: 0 auto; padding: 56px 0; }
-.section-head { text-align: center; margin-bottom: 48px; }
+.projects-grid-container { width: min(var(--maxW), 92%); margin: 0 auto; padding: 40px 0; }
+.section-head { text-align: center; margin-bottom: 32px; }
 .section-head h2 { font-size: 2.5rem; margin: 0 0 16px 0; color: var(--ink); font-weight: 700; }
 .section-head p { font-size: 1.1rem; color: var(--muted); margin: 0; }
 
@@ -90,7 +90,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 24px;
-  height: calc(100vh - var(--headerH) - 120px);
+  height: calc(100vh - var(--headerH) - 80px);
   min-height: 600px;
   position: relative;
 }
@@ -119,6 +119,12 @@ section.anchor { scroll-margin-top: var(--headerH); }
   }
 }
 
+
+
+.project-item {
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 .project-item:hover {
   position: absolute;
   top: 0;
@@ -141,10 +147,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
   transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Smooth return to normal state when no hover */
-.project-item {
-  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+/* Transition is now handled above */
 
 .project-item:hover .project-header h3 {
   color: var(--accent);
