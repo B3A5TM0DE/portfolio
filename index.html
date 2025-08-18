@@ -772,7 +772,12 @@
     overlay.className = 'intro-overlay';
     overlay.innerHTML =
       '<div class="sq-wrap" tabindex="0" role="button" aria-label="Enter site">' +
-        '<div class="square" aria-hidden="true"><span class="keyhole" aria-hidden="true"></span></div>' +
+        '<div class="square" aria-hidden="true">' +
+          '<span class="keyhole" aria-hidden="true"></span>' +
+          '<div class="ripple-1" aria-hidden="true"></div>' +
+          '<div class="ripple-2" aria-hidden="true"></div>' +
+          '<div class="ripple-3" aria-hidden="true"></div>' +
+        '</div>' +
         '<div class="decode-text" id="decodeText" aria-live="polite"></div>' +
       '</div>' +
       '<div class="white-wipe" aria-hidden="true"></div>';

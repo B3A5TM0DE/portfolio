@@ -710,6 +710,7 @@ footer { display: none; }
   .intro-overlay .square{
     width:44px; height:44px; background:#fff; border-radius:10px;
     display:grid; place-items:center; position:relative;
+    animation: boxPulse 3s ease-in-out infinite;
   }
   .intro-overlay .square::before{
     content:""; position:absolute; inset:-12px; border-radius:14px; z-index:-1;
@@ -722,9 +723,47 @@ footer { display: none; }
     background:radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.45) 0%, rgba(34,211,238,0) 60%);
     opacity:.6;
   }
+  
+  /* Ripple effects */
+  .intro-overlay .square::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    border-radius: 14px;
+    z-index: -1;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(34,211,238,.35) 0%, rgba(34,211,238,0) 65%);
+    filter: blur(6px);
+    animation: ripplePulse 3s ease-in-out infinite;
+  }
+  
+  /* Additional ripple layers */
+  .intro-overlay .square .ripple-1,
+  .intro-overlay .square .ripple-2,
+  .intro-overlay .square .ripple-3 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    transform: translate(-50%, -50%);
+    animation: rippleExpand 3s ease-in-out infinite;
+  }
+  
+  .intro-overlay .square .ripple-1 {
+    animation-delay: 0s;
+  }
+  
+  .intro-overlay .square .ripple-2 {
+    animation-delay: 1s;
+  }
+  
+  .intro-overlay .square .ripple-3 {
+    animation-delay: 2s;
+  }
   .intro-overlay .square .keyhole{
     position:relative; width:18px; height:28px; display:block; transform-origin:50% 50%;
-    animation: keyholePulse 2s ease-in-out infinite;
   }
   .intro-overlay .square .keyhole::before{
     content:""; position:absolute; left:50%; top:0; width:14px; height:14px; background:#000; border-radius:50%; transform:translateX(-50%);
@@ -737,10 +776,10 @@ footer { display: none; }
   .intro-overlay .square.spin{ animation:spin360 .9s cubic-bezier(.2,.8,.2,1) forwards; }
   .intro-overlay .square .keyhole.spin{ animation:counterSpin .9s cubic-bezier(.2,.8,.2,1) forwards; }
   
-  /* enhanced hover effect for the keyhole */
-  .intro-overlay .square:hover .keyhole {
-    animation: keyholePulse 0.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.6));
+  /* enhanced hover effect for the entire square */
+  .intro-overlay .square:hover {
+    animation: boxPulse 1.5s ease-in-out infinite;
+    cursor: pointer;
   }
   
   /* fade-only lift (no movement) */
@@ -760,15 +799,39 @@ footer { display: none; }
   @keyframes spin360{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
   @keyframes counterSpin{ from{transform:rotate(0deg);} to{transform:rotate(-360deg);} }
   
-  /* keyhole pulsing animation */
-  @keyframes keyholePulse {
+  /* box pulsing animation */
+  @keyframes boxPulse {
     0%, 100% { 
       transform: scale(1);
-      opacity: 1;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
     }
     50% { 
-      transform: scale(1.2);
+      transform: scale(1.05);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+    }
+  }
+  
+  /* ripple pulse animation */
+  @keyframes ripplePulse {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 0.35;
+    }
+    50% { 
+      transform: scale(1.1);
+      opacity: 0.6;
+    }
+  }
+  
+  /* ripple expand animation */
+  @keyframes rippleExpand {
+    0% { 
+      transform: translate(-50%, -50%) scale(1);
       opacity: 0.8;
+    }
+    100% { 
+      transform: translate(-50%, -50%) scale(3);
+      opacity: 0;
     }
   }
   
