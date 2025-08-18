@@ -386,14 +386,14 @@ section.anchor { scroll-margin-top: var(--headerH); }
   gap: 80px;
   max-width: 1000px;
   margin: 0 auto;
-  min-height: calc(100vh - 80px - 40px); /* Header height only */
+  height: calc(100vh - var(--headerH) - 80px);
   padding-top: 40px;
 }
 
 .experience-section,
 .skills-section {
-  height: auto;
-  overflow-y: visible;
+  height: calc(100vh - var(--headerH) - 120px);
+  overflow-y: auto;
   padding-right: 20px; /* Space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
@@ -402,7 +402,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
 
 .experience-section::-webkit-scrollbar,
 .skills-section::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .experience-section::-webkit-scrollbar-track,
@@ -413,7 +413,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
 .experience-section::-webkit-scrollbar-thumb,
 .skills-section::-webkit-scrollbar-thumb {
   background: var(--line);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .experience-section::-webkit-scrollbar-thumb:hover,
@@ -550,11 +550,11 @@ section.anchor { scroll-margin-top: var(--headerH); }
 
 /* Add buffer space at the bottom of sections */
 .experience-section .job-card:last-child {
-  margin-bottom: 120px; /* Generous space for work experience section */
+  margin-bottom: 40px; /* Space for work experience section */
 }
 
 .skills-section .skill-category:last-child {
-  margin-bottom: 55px; /* 40px + 15px extra for skills section */
+  margin-bottom: 40px; /* Space for skills section */
 }
 
 /* Responsive design */
