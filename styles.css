@@ -144,7 +144,6 @@ body.no-scroll { overflow: hidden; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: 2px solid red; /* Debug: visualize page bounds */
 }
 
 .experience-header {
@@ -174,7 +173,7 @@ body.no-scroll { overflow: hidden; }
   max-width: 1000px;
   margin: 0 auto;
   flex: 1;
-  border: 2px solid blue; /* Debug: visualize content bounds */
+  min-height: 0; /* Allow grid to shrink */
 }
 
 .experience-section,
@@ -184,7 +183,7 @@ body.no-scroll { overflow: hidden; }
   padding-right: 20px; /* Space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
-  border: 1px solid green; /* Debug: visualize section bounds */
+  min-height: 0; /* Allow sections to shrink and scroll */
 }
 
 .experience-section::-webkit-scrollbar,
