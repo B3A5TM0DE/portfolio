@@ -56,67 +56,84 @@
   <!-- PROJECTS PAGE (isolated) -->
   <div class="page projects-page" data-page="projects">
     <section id="projects" class="anchor" aria-label="Projects">
-      <div class="projects-pin">
-        <div class="pinner" id="projectsPinner">
-          <div class="section-head">
-            <h2 style="margin:0 0 6px 0;">Projects</h2>
-            <p style="margin:0;color:var(--muted);font-size:.95rem;">Scroll to step through projects. The page continues after the last one.</p>
-          </div>
-          <div class="carousel" id="projectsCarousel" aria-live="polite">
-            <div class="track" role="group" aria-roledescription="carousel" aria-label="Project slides (vertical)">
-              <!-- Slide 1 -->
-              <article class="slide" role="group" aria-label="ADFS + Duo MFA Integration">
-                <div class="project-card">
-                  <div class="project-header">
-                    <h3>ADFS + Duo MFA Integration</h3>
-                    <p class="project-desc">Deployed a .NET app for Windows endpoints, integrating ADFS with Duo MFA to harden authentication with minimal user friction.</p>
-                    <div class="tags"><span class="tag">C#</span><span class="tag">.NET</span><span class="tag">ADFS</span><span class="tag">Duo</span><span class="tag">Security</span></div>
-                    <div class="divider"></div>
-                    <ul class="bullets">
-                      <li>Reduced risky sign-ins by 42% post rollout.</li>
-                      <li>Graceful fallbacks for offline devices.</li>
-                      <li>Automated installer & health checks.</li>
-                    </ul>
-                  </div>
-                  <div class="project-media"><span>Image / GIF</span></div>
-                </div>
-              </article>
-              <!-- Slide 2 -->
-              <article class="slide" role="group" aria-label="Active Directory Auth Gateway">
-                <div class="project-card">
-                  <div class="project-header">
-                    <h3>Active Directory Auth Gateway</h3>
-                    <p class="project-desc">Azure gateway VM intercepting Kerberos/NTLM to apply conditional access and 2FA—no agents on domain controllers.</p>
-                    <div class="tags"><span class="tag">Azure</span><span class="tag">.NET</span><span class="tag">Kerberos</span><span class="tag">NTLM</span></div>
-                    <div class="divider"></div>
-                    <ul class="bullets">
-                      <li>WFP-based port inspection & policy engine.</li>
-                      <li>Per-request Duo prompt with allow/deny.</li>
-                      <li>Traffic shaping for lab replay tests.</li>
-                    </ul>
-                  </div>
-                  <div class="project-media"><span>Diagram</span></div>
-                </div>
-              </article>
-              <!-- Slide 3 -->
-              <article class="slide" role="group" aria-label="Fitness Tracking App">
-                <div class="project-card">
-                  <div class="project-header">
-                    <h3>Fitness Tracking App</h3>
-                    <p class="project-desc">SwiftUI mobile app to create and track workouts, integrating WHOOP data to adjust training intensity dynamically.</p>
-                    <div class="tags"><span class="tag">SwiftUI</span><span class="tag">iOS</span><span class="tag">Health APIs</span></div>
-                    <div class="divider"></div>
-                    <ul class="bullets">
-                      <li>Workout builder with sets/reps/weights.</li>
-                      <li>Zone-based trends & auto-adjustments.</li>
-                      <li>Clean, offline-first local store.</li>
-                    </ul>
-                  </div>
-                  <div class="project-media"><span>App Screens</span></div>
-                </div>
-              </article>
+      <div class="projects-grid-container">
+        <div class="section-head">
+          <h2 style="margin:0 0 6px 0;">Projects</h2>
+          <p style="margin:0;color:var(--muted);font-size:.95rem;">Hover over projects to explore them in detail.</p>
+        </div>
+        
+        <div class="projects-grid">
+          <!-- Project 1 -->
+          <article class="project-item" role="group" aria-label="ADFS + Duo MFA Integration">
+            <div class="project-card">
+              <div class="project-header">
+                <h3>ADFS + Duo MFA Integration</h3>
+                <p class="project-desc">Deployed a .NET app for Windows endpoints, integrating ADFS with Duo MFA to harden authentication with minimal user friction.</p>
+                <div class="tags"><span class="tag">C#</span><span class="tag">.NET</span><span class="tag">ADFS</span><span class="tag">Duo</span><span class="tag">Security</span></div>
+                <div class="divider"></div>
+                <ul class="bullets">
+                  <li>Reduced risky sign-ins by 42% post rollout.</li>
+                  <li>Graceful fallbacks for offline devices.</li>
+                  <li>Automated installer & health checks.</li>
+                </ul>
+              </div>
+              <div class="project-media"><span>Image / GIF</span></div>
             </div>
-          </div>
+          </article>
+          
+          <!-- Project 2 -->
+          <article class="project-item" role="group" aria-label="Active Directory Auth Gateway">
+            <div class="project-card">
+              <div class="project-header">
+                <h3>Active Directory Auth Gateway</h3>
+                <p class="project-desc">Azure gateway VM intercepting Kerberos/NTLM to apply conditional access and 2FA—no agents on domain controllers.</p>
+                <div class="tags"><span class="tag">Azure</span><span class="tag">.NET</span><span class="tag">Kerberos</span><span class="tag">NTLM</span></div>
+                <div class="divider"></div>
+                <ul class="bullets">
+                  <li>WFP-based port inspection & policy engine.</li>
+                  <li>Per-request Duo prompt with allow/deny.</li>
+                  <li>Traffic shaping for lab replay tests.</li>
+                </ul>
+              </div>
+              <div class="project-media"><span>Diagram</span></div>
+            </div>
+          </article>
+          
+          <!-- Project 3 -->
+          <article class="project-item" role="group" aria-label="Fitness Tracking App">
+            <div class="project-card">
+              <div class="project-header">
+                <h3>Fitness Tracking App</h3>
+                <p class="project-desc">SwiftUI mobile app to create and track workouts, integrating WHOOP data to adjust training intensity dynamically.</p>
+                <div class="tags"><span class="tag">SwiftUI</span><span class="tag">iOS</span><span class="tag">Health APIs</span></div>
+                <div class="divider"></div>
+                <ul class="bullets">
+                  <li>Workout builder with sets/reps/weights.</li>
+                  <li>Zone-based trends & auto-adjustments.</li>
+                  <li>Clean, offline-first local store.</li>
+                </ul>
+              </div>
+              <div class="project-media"><span>App Screens</span></div>
+            </div>
+          </article>
+          
+          <!-- Project 4 -->
+          <article class="project-item" role="group" aria-label="Network Security Dashboard">
+            <div class="project-card">
+              <div class="project-header">
+                <h3>Network Security Dashboard</h3>
+                <p class="project-desc">Real-time monitoring system for network traffic analysis with threat detection and automated response capabilities.</p>
+                <div class="tags"><span class="tag">Python</span><span class="tag">React</span><span class="tag">Docker</span><span class="tag">Security</span></div>
+                <div class="divider"></div>
+                <ul class="bullets">
+                  <li>Real-time packet analysis and threat detection.</li>
+                  <li>Machine learning-based anomaly detection.</li>
+                  <li>Automated incident response workflows.</li>
+                </ul>
+              </div>
+              <div class="project-media"><span>Dashboard</span></div>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -461,161 +478,10 @@
   })();
 
   // === Projects page logic ===
-  function sizeProjectsPin() {
-    const pinner = document.getElementById('projectsPinner');
-    if(!pinner) return;
-    const pinWrap = pinner.parentElement;
-    const slides = document.querySelectorAll('#projectsCarousel .slide').length;
-    if (!pinWrap || !slides) return;
-    const hh = getHeaderH();
-    const perSlide = Math.max(1, window.innerHeight - hh);
-    pinWrap.style.minHeight = (perSlide * slides + 0.5) + 'px';
-  }
-  window.addEventListener('resize', sizeProjectsPin);
-  document.addEventListener('DOMContentLoaded', sizeProjectsPin);
-
-  function initVerticalCarousel(root){
-    const track = root.querySelector('.track');
-    const slides = Array.from(root.querySelectorAll('.slide'));
-    let index = 0;
-
-    function update(){
-      track.style.transform = `translateY(${-index * 100}%)`;
-      slides.forEach((s,i)=> s.setAttribute('aria-hidden', i!==index));
-    }
-    function goTo(i){ index = Math.max(0, Math.min(slides.length-1, i)); update(); }
-    function prev(){ goTo(index-1); }
-    function next(){ goTo(index+1); }
-
-    let startY = 0, currY = 0, dragging = false;
-    const py = (e)=> e.touches? e.touches[0].clientY : e.clientY;
-    function onDown(e){ dragging=true; startY=py(e); currY=startY; track.style.transition='none'; }
-    function onMove(e){ if(!dragging) return; currY=py(e); const dy=currY-startY; track.style.transform = `translateY(calc(${-index*100}% + ${dy}px))`; }
-    function onUp(){ if(!dragging) return; dragging=false; track.style.transition=''; const dy=currY-startY; const threshold=Math.min(140, window.innerHeight*0.18); if(dy>threshold) prev(); else if(dy<-threshold) next(); else update(); }
-
-    track.addEventListener('pointerdown', onDown);
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    track.addEventListener('touchstart', onDown, {passive:true});
-    window.addEventListener('touchmove', onMove, {passive:true});
-    window.addEventListener('touchend', onUp);
-
-    window.addEventListener('resize', update);
-    update();
-
-    return { getIndex:()=>index, getLast:()=>slides.length-1, goNext:next, goPrev:prev };
-  }
-
   function initProjectsPage(){
-    const pinner = document.getElementById('projectsPinner');
-    const carousel = document.getElementById('projectsCarousel');
-    if(!pinner || !carousel) return;
-    pinner.tabIndex = 0;
-    const api = initVerticalCarousel(carousel);
-
-    const track = carousel.querySelector('.track');
-    let animating = false;
-    track.addEventListener('transitionstart', ()=> { animating = true; });
-    track.addEventListener('transitionend', ()=> { animating = false; setLocked(false); });
-
-    const body = document.body;
-    let wheelCooldown = false;
-    let exiting = false;
-
-    function setLocked(locked){ body.classList.toggle('no-scroll', locked); }
-
-    const pinWrap = pinner.parentElement;
-    function pinTop(){ return pinWrap.offsetTop; }
-    function pinBottom(){ return pinWrap.offsetTop + pinWrap.offsetHeight; }
-
-    const io = new IntersectionObserver((entries)=>{
-      if (!entries[0].isIntersecting) { setLocked(false); exiting = false; }
-    }, { root: null, threshold: 0 });
-    if (pinWrap) io.observe(pinWrap);
-
-    function isPinnedFullscreen(){
-      if (exiting) return false;
-      const r = pinner.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const hh = getHeaderH();
-      const topAligned = r.top <= (hh + 10);
-      const botAligned = r.bottom >= (vh - 10);
-      return topAligned && botAligned;
-    }
-
-    function snapOut(direction){
-      exiting = true;
-      setLocked(false);
-      const hh = getHeaderH();
-      const y = direction === 'down'
-        ? (pinBottom() - window.innerHeight + 2)
-        : Math.max(0, pinTop() - hh - 2);
-      smoothScrollTo(y);
-      setTimeout(()=> { exiting = false; }, 400);
-    }
-
-    function handleWheel(e){
-      if(!document.querySelector('.projects-page').classList.contains('active')) return;
-      if(!isPinnedFullscreen()) { setLocked(false); return; }
-      if (animating) { e.preventDefault(); return; }
-      const atFirst = api.getIndex() === 0;
-      const atLast  = api.getIndex() === api.getLast();
-      const dy = e.deltaY;
-
-      if ((dy > 0 && !atLast) || (dy < 0 && !atFirst)) {
-        e.preventDefault();
-        if (wheelCooldown) return;
-        wheelCooldown = true;
-        setLocked(true);
-        dy > 0 ? api.goNext() : api.goPrev();
-        setTimeout(()=> wheelCooldown = false, 380);
-      } else if (dy > 0 && atLast) {
-        e.preventDefault();
-        snapOut('down');
-      } else if (dy < 0 && atFirst) {
-        e.preventDefault();
-        snapOut('up');
-      }
-    }
-    pinner.addEventListener('wheel', handleWheel, { passive: false });
-
-    // Touch scroll -> slide (with snapOut at edges)
-    let touchStartY = 0, touchCurrY = 0, touching = false;
-    function tStart(e){ touching = true; touchStartY = e.touches[0].clientY; touchCurrY = touchStartY; }
-    function tMove(e){ if(!touching) return; touchCurrY = e.touches[0].clientY; }
-    function tEnd(){
-      if(!touching) return; touching = false;
-      if(!document.querySelector('.projects-page').classList.contains('active')) return;
-      if(!isPinnedFullscreen()) { setLocked(false); return; }
-      const dy = touchStartY - touchCurrY;
-      const threshold = Math.min(90, window.innerHeight * 0.12);
-      const atFirst = api.getIndex() === 0;
-      const atLast  = api.getIndex() === api.getLast();
-      if (dy > threshold && !atLast) { setLocked(true); api.goNext(); }
-      else if (dy < -threshold && !atFirst) { setLocked(true); api.goPrev(); }
-      else if (dy > 0 && atLast) { snapOut('down'); }
-      else if (dy < 0 && atFirst) { snapOut('up'); }
-      else { setLocked(false); }
-    }
-    pinner.addEventListener('touchstart', tStart, { passive: true });
-    pinner.addEventListener('touchmove', tMove, { passive: true });
-    pinner.addEventListener('touchend', tEnd);
-
-    // Keyboard support with snapOut
-    pinner.addEventListener('keydown', (e)=>{
-      if(!document.querySelector('.projects-page').classList.contains('active')) return;
-      if(!isPinnedFullscreen()) return;
-      const atFirst = api.getIndex() === 0;
-      const atLast  = api.getIndex() === api.getLast();
-      if(e.key === 'PageDown' || e.key === 'ArrowDown') {
-        if(!atLast) { e.preventDefault(); setLocked(true); api.goNext(); }
-        else { e.preventDefault(); snapOut('down'); }
-      }
-      if(e.key === 'PageUp' || e.key === 'ArrowUp') {
-        if(!atFirst) { e.preventDefault(); setLocked(true); api.goPrev(); }
-        else { e.preventDefault(); snapOut('up'); }
-      }
-    });
+    // Simple initialization for the new grid layout
+    // No complex carousel logic needed anymore
+    console.log('Projects page initialized with grid layout');
   }
 </script>
 <script>
