@@ -142,12 +142,15 @@ body.no-scroll { overflow: hidden; }
 .experience-page {
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .experience-header {
   text-align: center;
   margin-bottom: 40px;
   padding-top: 20px;
+  flex-shrink: 0;
 }
 
 .experience-header h2 {
@@ -169,7 +172,8 @@ body.no-scroll { overflow: hidden; }
   gap: 80px;
   max-width: 1000px;
   margin: 0 auto;
-  height: calc(100vh - 200px);
+  flex: 1;
+  min-height: 0;
 }
 
 .experience-section,
