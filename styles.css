@@ -142,14 +142,12 @@ body.no-scroll { overflow: hidden; }
 .experience-page {
   height: 100vh;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 .experience-header {
   text-align: center;
   margin-bottom: 40px;
-  flex-shrink: 0;
+  padding-top: 20px;
 }
 
 .experience-header h2 {
@@ -171,9 +169,7 @@ body.no-scroll { overflow: hidden; }
   gap: 80px;
   max-width: 1000px;
   margin: 0 auto;
-  height: 0;
-  flex: 1;
-  min-height: 0;
+  height: calc(100vh - 200px);
 }
 
 .experience-section,
@@ -183,7 +179,6 @@ body.no-scroll { overflow: hidden; }
   padding-right: 20px; /* Space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
-  min-height: 0;
 }
 
 .experience-section::-webkit-scrollbar,
