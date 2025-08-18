@@ -479,9 +479,37 @@
 
   // === Projects page logic ===
   function initProjectsPage(){
-    // Simple initialization for the new grid layout
-    // No complex carousel logic needed anymore
-    console.log('Projects page initialized with grid layout');
+    // Initialize click-based project expansion
+    const projectItems = document.querySelectorAll('.project-item');
+    const projectsGrid = document.querySelector('.projects-grid');
+    
+    projectItems.forEach(item => {
+      item.addEventListener('click', function() {
+        // If this item is already expanded, collapse it
+        if (this.classList.contains('expanded')) {
+          this.classList.remove('expanded');
+          projectsGrid.classList.remove('has-expanded');
+        } else {
+          // Collapse any previously expanded item
+          projectItems.forEach(project => project.classList.remove('expanded'));
+          projectsGrid.classList.remove('has-expanded');
+          
+          // Expand this item
+          this.classList.add('expanded');
+          projectsGrid.classList.add('has-expanded');
+        }
+      });
+    });
+    
+    // Click outside to collapse (optional)
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.project-item') && !e.target.closest('.projects-grid')) {
+        projectItems.forEach(project => project.classList.remove('expanded'));
+        projectsGrid.classList.remove('has-expanded');
+      }
+    });
+    
+    console.log('Projects page initialized with click-based expansion');
   }
 </script>
 <script>

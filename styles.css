@@ -107,6 +107,12 @@ section.anchor { scroll-margin-top: var(--headerH); }
   will-change: transform, z-index;
 }
 
+/* Hover effects for clickable feedback */
+.project-item:hover:not(.expanded) {
+  transform: translateY(20px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(2,6,23,0.1);
+}
+
 .project-item:nth-child(1) { animation-delay: 0.1s; }
 .project-item:nth-child(2) { animation-delay: 0.2s; }
 .project-item:nth-child(3) { animation-delay: 0.3s; }
@@ -125,7 +131,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
   transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.project-item:hover {
+.project-item.expanded {
   position: absolute;
   top: 0;
   left: 0;
@@ -136,12 +142,12 @@ section.anchor { scroll-margin-top: var(--headerH); }
   box-shadow: 0 40px 80px rgba(2,6,23,0.15);
 }
 
-.project-item:hover .project-card {
+.project-item.expanded .project-card {
   height: 100%;
   transform: none;
 }
 
-.projects-grid:hover .project-item:not(:hover) {
+.projects-grid.has-expanded .project-item:not(.expanded) {
   opacity: 0.3;
   transform: scale(0.8);
   transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -149,17 +155,42 @@ section.anchor { scroll-margin-top: var(--headerH); }
 
 /* Transition is now handled above */
 
-.project-item:hover .project-header h3 {
+.project-item.expanded .project-header h3 {
   color: var(--accent);
   font-size: clamp(24px, 3vw, 32px);
 }
 
-.project-item:hover .project-desc {
+/* Click indicator */
+.project-item::after {
+  content: 'Click to expand';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(55, 65, 81, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.project-item:hover::after {
+  opacity: 1;
+}
+
+.project-item.expanded::after {
+  content: 'Click to collapse';
+  opacity: 1;
+}
+
+.project-item.expanded .project-desc {
   color: var(--ink);
   font-size: 1.1rem;
 }
 
-.project-item:hover .project-media {
+.project-item.expanded .project-media {
   min-height: 200px;
   max-height: 300px;
 }
@@ -296,18 +327,18 @@ section.anchor { scroll-margin-top: var(--headerH); }
     gap: 20px;
   }
   
-  .project-item:hover {
+  .project-item.expanded {
     position: relative;
     width: auto;
     height: auto;
     transform: scale(1.02);
   }
   
-  .project-item:hover .project-card {
+  .project-item.expanded .project-card {
     transform: scale(1.01);
   }
   
-  .projects-grid:hover .project-item:not(:hover) {
+  .projects-grid.has-expanded .project-item:not(.expanded) {
     opacity: 0.7;
     transform: scale(0.98);
   }
