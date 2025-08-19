@@ -15,6 +15,7 @@
           <li><a href="#/experience" data-route="experience">Experience</a></li>
           <li><a href="#/projects" data-route="projects">Projects</a></li>
         </ul>
+        <div class="nav-music-circle" id="navMusicCircle"></div>
       </nav>
 </header>
 
@@ -405,6 +406,16 @@
         pages[which].classList.add('active');
       }
 
+      // Handle navbar music circle visibility
+      const navMusicCircle = document.getElementById('navMusicCircle');
+      if (navMusicCircle) {
+        if (which === 'home') {
+          navMusicCircle.classList.remove('show');
+        } else {
+          navMusicCircle.classList.add('show');
+        }
+      }
+
       if(which === 'projects'){
         if(homeSpyObserver) homeSpyObserver.disconnect();
         setNavActive('projects');
@@ -573,6 +584,8 @@
       if (currentRoute !== '#/home') {
         // Skip animation but still initialize everything
         decodeEl.textContent = 'WELCOME';
+        // Show intro text immediately for non-home pages
+        if (introText) introText.classList.add('show');
         revealPage();
         // Ensure music circle is initialized even when skipping animation
         setTimeout(() => {
@@ -623,6 +636,7 @@
   (function setupMusic(){
     const audio  = document.getElementById('heroTrack');
     const canvas = document.getElementById('musicViz');
+    const navCanvas = document.getElementById('navMusicCircle');
     const chip   = document.getElementById('audioChip');
     const toggle = document.getElementById('audioToggle');
     if (!audio || !canvas || !chip || !toggle) return;
@@ -658,6 +672,15 @@
     /* ===== Canvas ===== */
     const ctx = canvas.getContext('2d');
     let w=0, h=0, dpr=1, cx=0, cy=0;
+    
+    // Create navbar canvas if it doesn't exist
+    if (navCanvas) {
+      const navCtx = navCanvas.getContext('2d');
+      navCanvas.width = 60;
+      navCanvas.height = 60;
+      navCanvas.style.width = '60px';
+      navCanvas.style.height = '60px';
+    }
   
     function updateCenter(){
       // Try to find the name element first
@@ -858,6 +881,72 @@
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
     }
+    
+    // Draw navbar music circle
+    function drawNavMusicCircle(){
+      if (!navCanvas) return;
+      
+      const navCtx = navCanvas.getContext('2d');
+      const navW = navCanvas.width;
+      const navH = navCanvas.height;
+      const navCx = navW / 2;
+      const navCy = navH / 2;
+      const navRadius = Math.min(navW, navH) * 0.3;
+      
+      navCtx.clearRect(0, 0, navW, navH);
+      
+      if (!running || !analyser) {
+        // Draw static bars when paused
+        navCtx.lineCap = 'round';
+        navCtx.lineJoin = 'round';
+        navCtx.globalAlpha = 0.3;
+        navCtx.strokeStyle = '#6B7280';
+        
+        for (let i = 0; i < 8; i++) {
+          const a = angleOffset + (i / 8) * Math.PI * 2;
+          const ax = Math.cos(a), ay = Math.sin(a);
+          
+          const x1 = navCx + ax * navRadius;
+          const y1 = navCy + ay * navRadius;
+          const x2 = navCx + ax * (navRadius + 8);
+          const y2 = navCy + ay * (navRadius + 8);
+          
+          navCtx.lineWidth = 2;
+          navCtx.beginPath();
+          navCtx.moveTo(x1, y1);
+          navCtx.lineTo(x2, y2);
+          navCtx.stroke();
+        }
+        return;
+      }
+      
+      // Draw animated bars
+      analyser.getByteFrequencyData(freq);
+      navCtx.lineCap = 'round';
+      navCtx.lineJoin = 'round';
+      navCtx.globalAlpha = 0.6;
+      navCtx.strokeStyle = '#6B7280';
+      
+      for (let i = 0; i < 8; i++) {
+        const a = angleOffset + (i / 8) * Math.PI * 2;
+        const ax = Math.cos(a), ay = Math.sin(a);
+        
+        const freqIndex = Math.floor(i * freq.length / 8);
+        const intensity = freq[freqIndex] / 255;
+        const barLength = Math.max(4, intensity * 12);
+        
+        const x1 = navCx + ax * navRadius;
+        const y1 = navCy + ay * navRadius;
+        const x2 = navCx + ax * (navRadius + barLength);
+        const y2 = navCy + ay * (navRadius + barLength);
+        
+        navCtx.lineWidth = 2;
+        navCtx.beginPath();
+        navCtx.moveTo(x1, y1);
+        navCtx.lineTo(x2, y2);
+        navCtx.stroke();
+      }
+    }
   
     /* ===== Loop & controls ===== */
     let running=false, rafId=0;
@@ -873,10 +962,12 @@
       if (!running || !analyser) {
         // When paused, draw static neutral bars
         drawStaticBars();
+        drawNavMusicCircle();
         return;
       }
   
       drawRadialBars();
+      drawNavMusicCircle();
     }
   
     async function play(){
