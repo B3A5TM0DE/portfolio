@@ -409,7 +409,6 @@
         if(homeSpyObserver) homeSpyObserver.disconnect();
         setNavActive('projects');
         if(!projectsInitialized){ initProjectsPage(); projectsInitialized = true; }
-        sizeProjectsPin();
       } else if(which === 'home') {
         initHomeSpy();
         smoothScrollTo(0);
@@ -478,8 +477,6 @@
 <script>
   /* Key-only overlay with WELCOME decode -> spin -> wipe */
   (function () {
-    // If user deep-links to projects, skip overlay entirely (same behavior you had)
-    if ((location.hash || '#/home') === '#/projects') return;
   
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   
@@ -568,6 +565,21 @@
       if (reduce){
         decodeEl.textContent = 'WELCOME';
         revealPage();
+        return;
+      }
+      
+      // Check if we're on a non-home page and skip animation if so
+      const currentRoute = location.hash || '#/home';
+      if (currentRoute !== '#/home') {
+        // Skip animation but still initialize everything
+        decodeEl.textContent = 'WELCOME';
+        revealPage();
+        // Ensure music circle is initialized even when skipping animation
+        setTimeout(() => {
+          if (window.__updateMusicCenter) {
+            window.__updateMusicCenter();
+          }
+        }, 100);
         return;
       }
 
