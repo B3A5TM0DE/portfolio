@@ -372,6 +372,61 @@ section.anchor { scroll-margin-top: var(--headerH); }
   line-height: 1.6;
 }
 
+.contact-section {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.contact-section h3 {
+  margin: 0 0 20px 0;
+  color: var(--ink);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.contact-section p {
+  margin: 0 0 32px 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+.contact-methods {
+  display: grid;
+  gap: 24px;
+}
+
+.contact-method {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bgSubtle);
+  border-radius: var(--cardRadius);
+  border: 1px solid var(--line);
+}
+
+.contact-icon {
+  font-size: 1.5rem;
+}
+
+.contact-method h4 {
+  margin: 0 0 4px 0;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.contact-method a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-method a:hover {
+  text-decoration: underline;
+}
+
 /* ===== Experience Page ===== */
 .experience-page {
   height: calc(100vh - var(--headerH));
@@ -634,60 +689,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
   transition: width 0.8s ease;
 }
 
-/* ===== Contact Page ===== */
-.contact-content {
-  display: flex;
-  justify-content: center;
-  max-width: 600px;
-  margin: 0 auto;
-}
 
-.contact-info h3 {
-  margin: 0 0 20px 0;
-  color: var(--ink);
-  font-size: 1.4rem;
-}
-
-.contact-info p {
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 32px;
-}
-
-.contact-methods {
-  display: grid;
-  gap: 24px;
-}
-
-.contact-method {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: var(--bgSubtle);
-  border-radius: var(--cardRadius);
-  border: 1px solid var(--line);
-}
-
-.contact-icon {
-  font-size: 1.5rem;
-}
-
-.contact-method h4 {
-  margin: 0 0 4px 0;
-  color: var(--ink);
-  font-size: 1rem;
-}
-
-.contact-method a {
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.contact-method a:hover {
-  text-decoration: underline;
-}
 
 
 
@@ -698,10 +700,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
     gap: 40px;
   }
   
-  .contact-content {
-    max-width: 100%;
-    padding: 0 20px;
-  }
+
   
   .skills-grid {
     grid-template-columns: 1fr;

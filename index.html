@@ -14,7 +14,6 @@
           <li><a href="#/about" data-route="about">About</a></li>
           <li><a href="#/experience" data-route="experience">Experience</a></li>
           <li><a href="#/projects" data-route="projects">Projects</a></li>
-          <li><a href="#/contact" data-route="contact">Contact</a></li>
         </ul>
       </nav>
 </header>
@@ -159,6 +158,37 @@
               <p>Approaching complex technical challenges with systematic thinking and practical solutions</p>
             </div>
           </div>
+          
+          <div class="contact-section">
+            <h3>Let's Connect</h3>
+            <p>I'm always interested in new opportunities and collaborations. Whether you have a project in mind or just want to chat about technology and security, feel free to reach out.</p>
+            
+            <div class="contact-methods">
+              <div class="contact-method">
+                <span class="contact-icon">📧</span>
+                <div>
+                  <h4>Email</h4>
+                  <a href="mailto:owenbkelley@gmail.com">owenbkelley@gmail.com</a>
+                </div>
+              </div>
+              
+              <div class="contact-method">
+                <span class="contact-icon">💼</span>
+                <div>
+                  <h4>LinkedIn</h4>
+                  <a href="https://www.linkedin.com/in/owenbkelley/" target="_blank" rel="noopener">linkedin.com/in/owenbkelley</a>
+                </div>
+              </div>
+              
+              <div class="contact-method">
+                <span class="contact-icon">🐙</span>
+                <div>
+                  <h4>GitHub</h4>
+                  <a href="https://github.com/B3A5TM0DE" target="_blank" rel="noopener">github.com/B3A5TM0DE</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -268,48 +298,7 @@
           
 
 
-  <!-- CONTACT PAGE -->
-  <div class="page contact-page" data-page="contact">
-    <section id="contact" class="anchor" aria-label="Contact">
-      <div class="section-inner">
-        <h2>Get In Touch</h2>
-        <div class="contact-content">
-          <div class="contact-info">
-            <h3>Let's Connect</h3>
-            <p>I'm always interested in new opportunities and collaborations. Whether you have a project in mind or just want to chat about technology and security, feel free to reach out.</p>
-            
-            <div class="contact-methods">
-              <div class="contact-method">
-                <span class="contact-icon">📧</span>
-                <div>
-                  <h4>Email</h4>
-                  <a href="mailto:owenbkelley@gmail.com">owenbkelley@gmail.com</a>
-                </div>
-              </div>
-              
-              <div class="contact-method">
-                <span class="contact-icon">💼</span>
-                <div>
-                  <h4>LinkedIn</h4>
-                  <a href="https://www.linkedin.com/in/owenbkelley/" target="_blank" rel="noopener">linkedin.com/in/owenbkelley</a>
-                </div>
-              </div>
-              
-              <div class="contact-method">
-                <span class="contact-icon">🐙</span>
-                <div>
-                  <h4>GitHub</h4>
-                  <a href="https://github.com/B3A5TM0DE" target="_blank" rel="noopener">github.com/B3A5TM0DE</a>
-                </div>
-              </div>
-            </div>
-          </div>
-          
 
-        </div>
-      </div>
-    </section>
-  </div>
 </main>
 
 <footer>
@@ -375,8 +364,7 @@
       home: document.querySelector('.home-page'),
       about: document.querySelector('.about-page'),
       experience: document.querySelector('.experience-page'),
-      projects: document.querySelector('.projects-page'),
-      contact: document.querySelector('.contact-page')
+      projects: document.querySelector('.projects-page')
     };
     const navLinks = Array.from(document.querySelectorAll('nav a'));
     let homeSpyObserver = null;
@@ -441,7 +429,7 @@
       const hash = location.hash || '#/home';
       const m = hash.match(/^#\/(.*)$/);
       const r = m ? m[1] : 'home';
-      if(['home','about','experience','projects','contact'].includes(r)) return r;
+      if(['home','about','experience','projects'].includes(r)) return r;
       return 'home';
     }
 
