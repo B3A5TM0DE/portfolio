@@ -122,9 +122,37 @@ section.anchor { scroll-margin-top: var(--headerH); }
 }
 
 /* Hover effects for clickable feedback */
-.project-item:hover:not(.expanded) {
-  transform: translateY(20px) scale(1.02);
+.project-item:hover:not(.expanded) { 
+  transform: translateY(20px) scale(1.02); 
   box-shadow: 0 15px 30px rgba(2,6,23,0.1);
+}
+
+/* Expand tooltip */
+.expand-tooltip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.project-item:hover .expand-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.project-item.expanded .expand-tooltip {
+  display: none;
 }
 
 .project-item:nth-child(1) { animation-delay: 0.1s; }
