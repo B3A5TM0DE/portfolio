@@ -15,7 +15,7 @@
           <li><a href="#/experience" data-route="experience">Experience</a></li>
           <li><a href="#/projects" data-route="projects">Projects</a></li>
         </ul>
-        <canvas class="nav-music-circle" id="navMusicCircle" width="60" height="60"></canvas>
+        <canvas class="nav-music-circle" id="navMusicCircle" width="50" height="50"></canvas>
       </nav>
 </header>
 
@@ -690,7 +690,7 @@
     if (navCanvas && navCanvas.getContext) {
       try {
         navCtx = navCanvas.getContext('2d');
-        // Canvas dimensions are already set in HTML
+        // Canvas dimensions are already set in HTML (50x50)
       } catch (e) {
         console.warn('Navbar canvas context failed:', e);
       }
@@ -905,27 +905,27 @@
         const navH = navCanvas.height;
         const navCx = navW / 2;
         const navCy = navH / 2;
-        const navRadius = Math.min(navW, navH) * 0.3;
+        const navRadius = Math.min(navW, navH) * 0.25; // Smaller radius for more bars
         
         navCtx.clearRect(0, 0, navW, navH);
         
         if (!running || !analyser) {
-          // Draw static bars when paused
+          // Draw static bars when paused - more bars like main circle
           navCtx.lineCap = 'round';
           navCtx.lineJoin = 'round';
-          navCtx.globalAlpha = 0.3;
+          navCtx.globalAlpha = 0.4;
           navCtx.strokeStyle = '#6B7280';
           
-          for (let i = 0; i < 8; i++) {
-            const a = angleOffset + (i / 8) * Math.PI * 2;
+          for (let i = 0; i < 24; i++) { // More bars like main circle
+            const a = angleOffset + (i / 24) * Math.PI * 2;
             const ax = Math.cos(a), ay = Math.sin(a);
             
             const x1 = navCx + ax * navRadius;
             const y1 = navCy + ay * navRadius;
-            const x2 = navCx + ax * (navRadius + 8);
-            const y2 = navCy + ay * (navRadius + 8);
+            const x2 = navCx + ax * (navRadius + 6);
+            const y2 = navCy + ay * (navRadius + 6);
             
-            navCtx.lineWidth = 2;
+            navCtx.lineWidth = 1.5;
             navCtx.beginPath();
             navCtx.moveTo(x1, y1);
             navCtx.lineTo(x2, y2);
@@ -934,27 +934,27 @@
           return;
         }
         
-        // Draw animated bars
+        // Draw animated bars - more bars like main circle
         analyser.getByteFrequencyData(freq);
         navCtx.lineCap = 'round';
         navCtx.lineJoin = 'round';
         navCtx.globalAlpha = 0.6;
         navCtx.strokeStyle = '#6B7280';
         
-        for (let i = 0; i < 8; i++) {
-          const a = angleOffset + (i / 8) * Math.PI * 2;
+        for (let i = 0; i < 24; i++) { // More bars like main circle
+          const a = angleOffset + (i / 24) * Math.PI * 2;
           const ax = Math.cos(a), ay = Math.sin(a);
           
-          const freqIndex = Math.floor(i * freq.length / 8);
+          const freqIndex = Math.floor(i * freq.length / 24);
           const intensity = freq[freqIndex] / 255;
-          const barLength = Math.max(4, intensity * 12);
+          const barLength = Math.max(3, intensity * 10);
           
           const x1 = navCx + ax * navRadius;
           const y1 = navCy + ay * navRadius;
           const x2 = navCx + ax * (navRadius + barLength);
           const y2 = navCy + ay * (navRadius + barLength);
           
-          navCtx.lineWidth = 2;
+          navCtx.lineWidth = 1.5;
           navCtx.beginPath();
           navCtx.moveTo(x1, y1);
           navCtx.lineTo(x2, y2);
