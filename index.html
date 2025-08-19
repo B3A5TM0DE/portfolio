@@ -470,6 +470,13 @@
     
     projectItems.forEach((item, index) => {
       console.log(`Adding click listener to project ${index + 1}`);
+      
+      // Initialize tooltip text
+      const tooltip = item.querySelector('.expand-tooltip');
+      if (tooltip) {
+        tooltip.textContent = tooltip.dataset.expand;
+      }
+      
       item.addEventListener('click', function(e) {
         console.log(`Project ${index + 1} clicked!`);
         e.stopPropagation();
