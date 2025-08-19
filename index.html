@@ -15,7 +15,7 @@
           <li><a href="#/experience" data-route="experience">Experience</a></li>
           <li><a href="#/projects" data-route="projects">Projects</a></li>
         </ul>
-        <div class="nav-music-circle" id="navMusicCircle"></div>
+        <canvas class="nav-music-circle" id="navMusicCircle" width="60" height="60"></canvas>
       </nav>
 </header>
 
@@ -450,12 +450,26 @@
 
   // === Projects page logic ===
   function initProjectsPage(){
+    console.log('Initializing projects page...');
+    
     // Initialize click-based project expansion
     const projectItems = document.querySelectorAll('.project-item');
     const projectsGrid = document.querySelector('.projects-grid');
     
-    projectItems.forEach(item => {
-      item.addEventListener('click', function() {
+    console.log('Found project items:', projectItems.length);
+    console.log('Found projects grid:', projectsGrid);
+    
+    if (!projectItems.length || !projectsGrid) {
+      console.error('Projects page elements not found!');
+      return;
+    }
+    
+    projectItems.forEach((item, index) => {
+      console.log(`Adding click listener to project ${index + 1}`);
+      item.addEventListener('click', function(e) {
+        console.log(`Project ${index + 1} clicked!`);
+        e.stopPropagation();
+        
         // If this item is already expanded, collapse it
         if (this.classList.contains('expanded')) {
           this.classList.remove('expanded');
@@ -479,8 +493,6 @@
         projectsGrid.classList.remove('has-expanded');
       }
     });
-    
-
     
     console.log('Projects page initialized with click-based expansion');
   }
@@ -674,12 +686,14 @@
     let w=0, h=0, dpr=1, cx=0, cy=0;
     
     // Create navbar canvas if it doesn't exist
-    if (navCanvas) {
-      const navCtx = navCanvas.getContext('2d');
-      navCanvas.width = 60;
-      navCanvas.height = 60;
-      navCanvas.style.width = '60px';
-      navCanvas.style.height = '60px';
+    let navCtx = null;
+    if (navCanvas && navCanvas.getContext) {
+      try {
+        navCtx = navCanvas.getContext('2d');
+        // Canvas dimensions are already set in HTML
+      } catch (e) {
+        console.warn('Navbar canvas context failed:', e);
+      }
     }
   
     function updateCenter(){
@@ -884,32 +898,61 @@
     
     // Draw navbar music circle
     function drawNavMusicCircle(){
-      if (!navCanvas) return;
+      if (!navCanvas || !navCtx) return;
       
-      const navCtx = navCanvas.getContext('2d');
-      const navW = navCanvas.width;
-      const navH = navCanvas.height;
-      const navCx = navW / 2;
-      const navCy = navH / 2;
-      const navRadius = Math.min(navW, navH) * 0.3;
-      
-      navCtx.clearRect(0, 0, navW, navH);
-      
-      if (!running || !analyser) {
-        // Draw static bars when paused
+      try {
+        const navW = navCanvas.width;
+        const navH = navCanvas.height;
+        const navCx = navW / 2;
+        const navCy = navH / 2;
+        const navRadius = Math.min(navW, navH) * 0.3;
+        
+        navCtx.clearRect(0, 0, navW, navH);
+        
+        if (!running || !analyser) {
+          // Draw static bars when paused
+          navCtx.lineCap = 'round';
+          navCtx.lineJoin = 'round';
+          navCtx.globalAlpha = 0.3;
+          navCtx.strokeStyle = '#6B7280';
+          
+          for (let i = 0; i < 8; i++) {
+            const a = angleOffset + (i / 8) * Math.PI * 2;
+            const ax = Math.cos(a), ay = Math.sin(a);
+            
+            const x1 = navCx + ax * navRadius;
+            const y1 = navCy + ay * navRadius;
+            const x2 = navCx + ax * (navRadius + 8);
+            const y2 = navCy + ay * (navRadius + 8);
+            
+            navCtx.lineWidth = 2;
+            navCtx.beginPath();
+            navCtx.moveTo(x1, y1);
+            navCtx.lineTo(x2, y2);
+            navCtx.stroke();
+          }
+          return;
+        }
+        
+        // Draw animated bars
+        analyser.getByteFrequencyData(freq);
         navCtx.lineCap = 'round';
         navCtx.lineJoin = 'round';
-        navCtx.globalAlpha = 0.3;
+        navCtx.globalAlpha = 0.6;
         navCtx.strokeStyle = '#6B7280';
         
         for (let i = 0; i < 8; i++) {
           const a = angleOffset + (i / 8) * Math.PI * 2;
           const ax = Math.cos(a), ay = Math.sin(a);
           
+          const freqIndex = Math.floor(i * freq.length / 8);
+          const intensity = freq[freqIndex] / 255;
+          const barLength = Math.max(4, intensity * 12);
+          
           const x1 = navCx + ax * navRadius;
           const y1 = navCy + ay * navRadius;
-          const x2 = navCx + ax * (navRadius + 8);
-          const y2 = navCy + ay * (navRadius + 8);
+          const x2 = navCx + ax * (navRadius + barLength);
+          const y2 = navCy + ay * (navRadius + barLength);
           
           navCtx.lineWidth = 2;
           navCtx.beginPath();
@@ -917,34 +960,8 @@
           navCtx.lineTo(x2, y2);
           navCtx.stroke();
         }
-        return;
-      }
-      
-      // Draw animated bars
-      analyser.getByteFrequencyData(freq);
-      navCtx.lineCap = 'round';
-      navCtx.lineJoin = 'round';
-      navCtx.globalAlpha = 0.6;
-      navCtx.strokeStyle = '#6B7280';
-      
-      for (let i = 0; i < 8; i++) {
-        const a = angleOffset + (i / 8) * Math.PI * 2;
-        const ax = Math.cos(a), ay = Math.sin(a);
-        
-        const freqIndex = Math.floor(i * freq.length / 8);
-        const intensity = freq[freqIndex] / 255;
-        const barLength = Math.max(4, intensity * 12);
-        
-        const x1 = navCx + ax * navRadius;
-        const y1 = navCy + ay * navRadius;
-        const x2 = navCx + ax * (navRadius + barLength);
-        const y2 = navCy + ay * (navRadius + barLength);
-        
-        navCtx.lineWidth = 2;
-        navCtx.beginPath();
-        navCtx.moveTo(x1, y1);
-        navCtx.lineTo(x2, y2);
-        navCtx.stroke();
+      } catch (e) {
+        console.warn('Navbar music circle drawing failed:', e);
       }
     }
   
