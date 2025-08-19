@@ -61,7 +61,7 @@
           <!-- Project 1 -->
           <article class="project-item" role="group" aria-label="ADFS + Duo MFA Integration">
             <div class="project-card">
-              <div class="expand-tooltip">Click to expand</div>
+              <div class="expand-tooltip" data-expand="Click to expand" data-collapse="Click to minimize"></div>
               <div class="project-header">
                 <h3>ADFS + Duo MFA Integration</h3>
                 <p class="project-desc">Deployed a .NET app for Windows endpoints, integrating ADFS with Duo MFA to harden authentication with minimal user friction.</p>
@@ -80,7 +80,7 @@
           <!-- Project 2 -->
           <article class="project-item" role="group" aria-label="Active Directory Auth Gateway">
             <div class="project-card">
-              <div class="expand-tooltip">Click to expand</div>
+              <div class="expand-tooltip" data-expand="Click to expand" data-collapse="Click to minimize"></div>
               <div class="project-header">
                 <h3>Active Directory Auth Gateway</h3>
                 <p class="project-desc">Azure gateway VM intercepting Kerberos/NTLM to apply conditional access and 2FA—no agents on domain controllers.</p>
@@ -99,7 +99,7 @@
           <!-- Project 3 -->
           <article class="project-item" role="group" aria-label="Fitness Tracking App">
             <div class="project-card">
-              <div class="expand-tooltip">Click to expand</div>
+              <div class="expand-tooltip" data-expand="Click to expand" data-collapse="Click to minimize"></div>
               <div class="project-header">
                 <h3>Fitness Tracking App</h3>
                 <p class="project-desc">SwiftUI mobile app to create and track workouts, integrating WHOOP data to adjust training intensity dynamically.</p>
@@ -118,7 +118,7 @@
           <!-- Project 4 -->
           <article class="project-item" role="group" aria-label="Network Security Dashboard">
             <div class="project-card">
-              <div class="expand-tooltip">Click to expand</div>
+              <div class="expand-tooltip" data-expand="Click to expand" data-collapse="Click to minimize"></div>
               <div class="project-header">
                 <h3>Network Security Dashboard</h3>
                 <p class="project-desc">Real-time monitoring system for network traffic analysis with threat detection and automated response capabilities.</p>
@@ -478,14 +478,30 @@
         if (this.classList.contains('expanded')) {
           this.classList.remove('expanded');
           projectsGrid.classList.remove('has-expanded');
+          // Update tooltip text back to expand
+          const tooltip = this.querySelector('.expand-tooltip');
+          if (tooltip) {
+            tooltip.textContent = tooltip.dataset.expand;
+          }
         } else {
           // Collapse any previously expanded item
-          projectItems.forEach(project => project.classList.remove('expanded'));
+          projectItems.forEach(project => {
+            project.classList.remove('expanded');
+            const tooltip = project.querySelector('.expand-tooltip');
+            if (tooltip) {
+              tooltip.textContent = tooltip.dataset.expand;
+            }
+          });
           projectsGrid.classList.remove('has-expanded');
           
           // Expand this item
           this.classList.add('expanded');
           projectsGrid.classList.add('has-expanded');
+          // Update tooltip text to collapse
+          const tooltip = this.querySelector('.expand-tooltip');
+          if (tooltip) {
+            tooltip.textContent = tooltip.dataset.collapse;
+          }
         }
       });
     });

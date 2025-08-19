@@ -152,7 +152,8 @@ section.anchor { scroll-margin-top: var(--headerH); }
 }
 
 .project-item.expanded .expand-tooltip {
-  display: none;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .project-item:nth-child(1) { animation-delay: 0.1s; }
