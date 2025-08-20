@@ -812,23 +812,9 @@
         return;
       }
       
-      // Check if we're on a non-home page and skip animation if so
-      const currentRoute = location.hash || '#/home';
-      if (currentRoute !== '#/home') {
-        // Skip animation but still initialize everything
-        decodeEl.textContent = 'WELCOME';
-        revealPage();
-        // Set a flag to indicate we unlocked from a non-home page
-        window.__unlockedFromNonHome = true;
-        // Ensure music circle is initialized even when skipping animation
-        setTimeout(() => {
-          if (window.__updateMusicCenter) {
-            window.__updateMusicCenter();
-          }
-        }, 100);
-        return;
-      }
-
+      // Always show the full animation on refresh, regardless of current page
+      // The page will be navigated to correctly after the animation completes
+      
       // Reset any hover states and ensure clean animation state
       sq.style.animationPlayState = 'running';
       sq.style.filter = 'none';
@@ -849,6 +835,12 @@
           if (kh) kh.classList.add('spin');
         }, 100);
       });
+      
+      // Set a flag to indicate we unlocked from a non-home page (if applicable)
+      const currentRoute = location.hash || '#/home';
+      if (currentRoute !== '#/home') {
+        window.__unlockedFromNonHome = true;
+      }
     }
 
   
