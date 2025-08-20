@@ -423,8 +423,14 @@
         smoothScrollTo(0);
         // Ensure intro text is visible when returning to home
         const introText = document.querySelector('.home-page #intro .intro-text');
+        console.log('showPage home - introText found:', !!introText);
         if (introText && !introText.classList.contains('show')) {
           introText.classList.add('show');
+          console.log('Added show class to intro text in showPage');
+        } else if (introText) {
+          console.log('Intro text already has show class');
+        } else {
+          console.warn('Intro text element not found in showPage');
         }
         // Update music circle center when returning to home
         setTimeout(() => {
@@ -639,7 +645,10 @@
     var wipe = overlay.querySelector('.white-wipe');
     var decodeEl = overlay.querySelector('#decodeText');
 
-    var introText = document.querySelector('.home-page #intro .intro-text');
+    // Get intro text element dynamically since it might not exist when script runs
+    function getIntroText() {
+      return document.querySelector('.home-page #intro .intro-text');
+    }
   
     function revealPage(){
   overlay.classList.add('revealing');
@@ -648,7 +657,14 @@
   const finish = () => {
     overlay.classList.add('hidden');
     // Always show intro text when page is revealed
-    if (introText) introText.classList.add('show');
+    const introText = getIntroText();
+    console.log('revealPage finish - introText found:', !!introText);
+    if (introText) {
+      introText.classList.add('show');
+      console.log('Added show class to intro text');
+    } else {
+      console.warn('Intro text element not found in revealPage');
+    }
     window.dispatchEvent(new Event('hero-revealed'));   // <-- kick the typewriter
   };
 
@@ -709,6 +725,7 @@
         // Skip animation but still initialize everything
         decodeEl.textContent = 'WELCOME';
         // Show intro text immediately for non-home pages
+        const introText = getIntroText();
         if (introText) introText.classList.add('show');
         revealPage();
         // Ensure music circle is initialized even when skipping animation
@@ -754,6 +771,7 @@
       decodeEl.textContent = 'WELCOME';
       revealPage();
       // Ensure intro text is shown
+      const introText = getIntroText();
       if (introText) introText.classList.add('show');
     }
   })();
