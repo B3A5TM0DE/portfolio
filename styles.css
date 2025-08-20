@@ -133,12 +133,16 @@ section.anchor { scroll-margin-top: var(--headerH); }
   white-space: nowrap;
 }
 
-.project-item:hover .expand-tooltip {
+/* Show tooltips on hover for both projects and job cards */
+.project-item:hover .expand-tooltip,
+.job-card:hover .expand-tooltip {
   opacity: 1;
   transform: translateY(0);
 }
 
-.project-item.expanded .expand-tooltip {
+/* Show tooltips when expanded for both projects and job cards */
+.project-item.expanded .expand-tooltip,
+.job-card.expanded .expand-tooltip {
   opacity: 1;
   transform: translateY(0);
 }
