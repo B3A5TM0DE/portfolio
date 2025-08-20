@@ -375,6 +375,20 @@ section.anchor { scroll-margin-top: var(--headerH); }
   grid-template-columns: 1fr auto;
   gap: 60px;
   align-items: start;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.about-left {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.about-right {
+  position: sticky;
+  top: calc(var(--headerH) + 40px);
 }
 
 .about-left {
@@ -535,6 +549,12 @@ section.anchor { scroll-margin-top: var(--headerH); }
   overflow: hidden;
 }
 
+.experience-content {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
 
 
 .experience-content {
@@ -556,7 +576,13 @@ section.anchor { scroll-margin-top: var(--headerH); }
   scrollbar-color: var(--line) transparent;
   min-height: 0; /* Allow sections to shrink and scroll */
   position: relative;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
+
+.experience-section:nth-child(1) { animation-delay: 0.1s; }
+.skills-section { animation-delay: 0.2s; }
 
 .experience-section::-webkit-scrollbar,
 .skills-section::-webkit-scrollbar {
@@ -604,7 +630,14 @@ section.anchor { scroll-margin-top: var(--headerH); }
   transition: all 0.3s ease;
   position: relative;
   cursor: pointer;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
+
+.job-card:nth-child(1) { animation-delay: 0.3s; }
+.job-card:nth-child(2) { animation-delay: 0.4s; }
+.job-card:nth-child(3) { animation-delay: 0.5s; }
 
 .job-card:hover {
   transform: translateY(-2px);
@@ -742,7 +775,14 @@ section.anchor { scroll-margin-top: var(--headerH); }
 
 .skill-category {
   margin-bottom: 32px;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
+
+.skill-category:nth-child(1) { animation-delay: 0.6s; }
+.skill-category:nth-child(2) { animation-delay: 0.7s; }
+.skill-category:nth-child(3) { animation-delay: 0.8s; }
 
 .skill-category h4 {
   font-size: 1.1rem;
