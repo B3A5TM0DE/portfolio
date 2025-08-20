@@ -556,6 +556,7 @@
         // If this item is already expanded, collapse it
         if (this.classList.contains('expanded')) {
           this.classList.remove('expanded');
+          this.closest('.experience-section').classList.remove('has-expanded');
           // Update tooltip text back to expand
           const tooltip = this.querySelector('.expand-tooltip');
           if (tooltip) {
@@ -571,8 +572,14 @@
             }
           });
           
+          // Remove has-expanded from all sections
+          document.querySelectorAll('.experience-section').forEach(section => {
+            section.classList.remove('has-expanded');
+          });
+          
           // Expand this item
           this.classList.add('expanded');
+          this.closest('.experience-section').classList.add('has-expanded');
           // Update tooltip text to collapse
           const tooltip = this.querySelector('.expand-tooltip');
           if (tooltip) {
@@ -586,6 +593,10 @@
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.job-card')) {
         jobCards.forEach(job => job.classList.remove('expanded'));
+        // Remove has-expanded from all sections
+        document.querySelectorAll('.experience-section').forEach(section => {
+          section.classList.remove('has-expanded');
+        });
       }
     });
     

@@ -485,6 +485,7 @@ section.anchor { scroll-margin-top: var(--headerH); }
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
   min-height: 0; /* Allow sections to shrink and scroll */
+  position: relative;
 }
 
 .experience-section::-webkit-scrollbar,
@@ -542,9 +543,25 @@ section.anchor { scroll-margin-top: var(--headerH); }
 }
 
 .job-card.expanded {
-  transform: scale(1.02);
-  box-shadow: 0 12px 32px rgba(2,6,23,0.15);
-  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  transform: none;
+  box-shadow: 0 40px 80px rgba(2,6,23,0.15);
+  background: white;
+  border-radius: var(--cardRadius);
+  padding: 40px;
+  margin: 0;
+}
+
+/* Hide other job cards when one is expanded */
+.experience-section.has-expanded .job-card:not(.expanded) {
+  opacity: 0.3;
+  transform: scale(0.8);
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 
