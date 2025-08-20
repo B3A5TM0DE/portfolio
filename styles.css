@@ -625,6 +625,51 @@ section.anchor { scroll-margin-top: var(--headerH); }
   border-radius: var(--cardRadius);
   padding: 40px;
   margin: 0;
+  overflow-y: auto;
+}
+
+/* Expanded content styling */
+.expanded-content {
+  display: none;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.job-card.expanded .expanded-content {
+  display: block;
+}
+
+.expanded-content h5 {
+  margin: 0 0 16px 0;
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.expanded-bullets {
+  margin: 0 0 24px 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.expanded-bullets li {
+  margin: 0 0 12px 0;
+  color: var(--muted);
+  line-height: 1.6;
+  position: relative;
+}
+
+.expanded-bullets li::before {
+  content: "•";
+  color: var(--accent);
+  font-weight: bold;
+  position: absolute;
+  left: -20px;
+}
+
+.expanded-bullets li:last-child {
+  margin-bottom: 0;
 }
 
 /* Hide other job cards when one is expanded */
