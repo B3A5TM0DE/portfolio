@@ -11,20 +11,7 @@ nav a { text-decoration: none; color: var(--ink); text-transform: capitalize; pa
 nav a.active { outline: 2px solid var(--ink); outline-offset: 2px; background: var(--bgSubtle); }
 nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 3px; }
 
-.nav-music-circle {
-  position: fixed;
-  right: 20px;
-  top: 20px;
-  width: 50px;
-  height: 50px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 10;
-}
 
-.nav-music-circle.show {
-  opacity: 1;
-}
 
 /* ===== Main / Shared ===== */
 main { padding-top: var(--headerH); }
@@ -545,12 +532,19 @@ section.anchor { scroll-margin-top: var(--headerH); }
   margin-bottom: 24px;
   transition: all 0.3s ease;
   position: relative;
+  cursor: pointer;
 }
 
 .job-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border-color: var(--accent);
+}
+
+.job-card.expanded {
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(2,6,23,0.15);
+  z-index: 10;
 }
 
 
