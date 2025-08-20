@@ -421,6 +421,11 @@
       } else if(which === 'home') {
         initHomeSpy();
         smoothScrollTo(0);
+        // Ensure intro text is visible when returning to home
+        const introText = document.querySelector('.home-page #intro .intro-text');
+        if (introText && !introText.classList.contains('show')) {
+          introText.classList.add('show');
+        }
         // Update music circle center when returning to home
         setTimeout(() => {
           if (window.__updateMusicCenter) {
@@ -642,7 +647,8 @@
 
   const finish = () => {
     overlay.classList.add('hidden');
-    if (introText) introText.classList.add('show');     // <-- unhide intro block
+    // Always show intro text when page is revealed
+    if (introText) introText.classList.add('show');
     window.dispatchEvent(new Event('hero-revealed'));   // <-- kick the typewriter
   };
 
@@ -747,6 +753,8 @@
     if (reduce) {
       decodeEl.textContent = 'WELCOME';
       revealPage();
+      // Ensure intro text is shown
+      if (introText) introText.classList.add('show');
     }
   })();
   </script>   
