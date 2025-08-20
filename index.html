@@ -429,25 +429,43 @@
       } else if(which === 'home') {
         initHomeSpy();
         smoothScrollTo(0);
-        // Ensure intro text is visible when returning to home
-        const introText = document.querySelector('.home-page #intro .intro-text');
-        console.log('showPage home - introText found:', !!introText);
-        if (introText && !introText.classList.contains('show')) {
-          introText.classList.add('show');
-          console.log('Added show class to intro text in showPage');
-        } else if (introText) {
-          console.log('Intro text already has show class');
-        } else {
-          console.warn('Intro text element not found in showPage');
-          // Fallback: try again after a delay
+        
+        // Check if we unlocked from a non-home page and need to trigger intro text
+        if (window.__unlockedFromNonHome) {
+          console.log('Unlocked from non-home page, triggering intro text...');
+          // Clear the flag
+          window.__unlockedFromNonHome = false;
+          
+          // Trigger the intro text display with a slight delay to ensure DOM is ready
           setTimeout(() => {
-            const retryIntroText = document.querySelector('.home-page #intro .intro-text');
-            if (retryIntroText && !retryIntroText.classList.contains('show')) {
-              retryIntroText.classList.add('show');
-              console.log('Added show class to intro text in fallback');
+            const introText = document.querySelector('.home-page #intro .intro-text');
+            if (introText && !introText.classList.contains('show')) {
+              introText.classList.add('show');
+              console.log('Successfully triggered intro text after unlocking from non-home page');
             }
           }, 100);
+        } else {
+          // Normal home page navigation - ensure intro text is visible
+          const introText = document.querySelector('.home-page #intro .intro-text');
+          console.log('showPage home - introText found:', !!introText);
+          if (introText && !introText.classList.contains('show')) {
+            introText.classList.add('show');
+            console.log('Added show class to intro text in showPage');
+          } else if (introText) {
+            console.log('Intro text already has show class');
+          } else {
+            console.warn('Intro text element not found in showPage');
+            // Fallback: try again after a delay
+            setTimeout(() => {
+              const retryIntroText = document.querySelector('.home-page #intro .intro-text');
+              if (retryIntroText && !retryIntroText.classList.contains('show')) {
+                retryIntroText.classList.add('show');
+                console.log('Added show class to intro text in fallback');
+              }
+            }, 100);
+          }
         }
+        
         // Update music circle center when returning to home
         setTimeout(() => {
           if (window.__updateMusicCenter) {
@@ -741,17 +759,8 @@
         // Skip animation but still initialize everything
         decodeEl.textContent = 'WELCOME';
         revealPage();
-        // Show intro text after a delay to ensure DOM is ready
-        setTimeout(() => {
-          const introText = getIntroText();
-          console.log('Non-home page refresh - introText found:', !!introText);
-          if (introText) {
-            introText.classList.add('show');
-            console.log('Added show class to intro text from non-home page');
-          } else {
-            console.warn('Intro text element not found from non-home page');
-          }
-        }, 200);
+        // Set a flag to indicate we unlocked from a non-home page
+        window.__unlockedFromNonHome = true;
         // Ensure music circle is initialized even when skipping animation
         setTimeout(() => {
           if (window.__updateMusicCenter) {
