@@ -490,6 +490,7 @@
         smoothScrollTo(0);
         
         // Check if we unlocked from a non-home page and need to trigger intro text
+        console.log('showPage home - __unlockedFromNonHome flag:', !!window.__unlockedFromNonHome);
         if (window.__unlockedFromNonHome) {
           console.log('Unlocked from non-home page, triggering intro text...');
           // Clear the flag
@@ -523,6 +524,19 @@
               }
             }, 100);
           }
+        }
+        
+        // Additional fallback: if we're coming from a non-home page but the flag was cleared,
+        // try to show intro text anyway after a longer delay
+        const currentRoute = location.hash || '#/home';
+        if (currentRoute === '#/home') {
+          setTimeout(() => {
+            const introText = document.querySelector('.home-page #intro .intro-text');
+            if (introText && !introText.classList.contains('show')) {
+              introText.classList.add('show');
+              console.log('Added show class to intro text in additional fallback');
+            }
+          }, 500);
         }
         
         // Update music circle center when returning to home
@@ -840,6 +854,7 @@
       const currentRoute = location.hash || '#/home';
       if (currentRoute !== '#/home') {
         window.__unlockedFromNonHome = true;
+        console.log('Set __unlockedFromNonHome flag for route:', currentRoute);
       }
     }
 
