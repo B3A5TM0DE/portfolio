@@ -855,6 +855,16 @@
       if (currentRoute !== '#/home') {
         window.__unlockedFromNonHome = true;
         console.log('Set __unlockedFromNonHome flag for route:', currentRoute);
+        
+        // Force intro text to appear when unlocking from non-home pages
+        // This ensures the text shows up regardless of navigation timing
+        setTimeout(() => {
+          const introText = document.querySelector('.home-page #intro .intro-text');
+          if (introText && !introText.classList.contains('show')) {
+            introText.classList.add('show');
+            console.log('Forced intro text to show from startSequence for route:', currentRoute);
+          }
+        }, 1000); // Wait 1 second for the page to be revealed and DOM to be ready
       }
     }
 
